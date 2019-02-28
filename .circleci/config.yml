@@ -1,0 +1,40 @@
+version: 2
+jobs:
+  lint:
+    docker:
+      - image: circleci/golang:1.11
+    working_directory: /go/src/github.com/oxyno-zeta/kubernetes-tagger
+    steps:
+      - checkout
+      - run: make lint
+      - save_cache:
+          key: deps-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - "vendor"
+  build:
+    docker:
+      - image: circleci/golang:1.11
+    working_directory: /go/src/github.com/oxyno-zeta/kubernetes-tagger
+    steps:
+      - restore_cache:
+          keys:
+            - deps-{{ .Branch }}-{{ .Revision }}
+      - checkout
+      - run: make build
+  test:
+    docker:
+      - image: circleci/golang:1.11
+    working_directory: /go/src/github.com/oxyno-zeta/kubernetes-tagger
+    steps:
+      - restore_cache:
+          keys:
+            - deps-{{ .Branch }}-{{ .Revision }}
+      - checkout
+      - run: make test
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - lint
+      - build
+      - test
