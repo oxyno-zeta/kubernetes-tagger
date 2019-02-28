@@ -5,6 +5,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/version"
+
 	"github.com/fsnotify/fsnotify"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/business"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/config"
@@ -79,10 +81,16 @@ func main() {
 
 	readConfiguration()
 
+	versionObj := version.GetVersion()
+	logrus.WithFields(logrus.Fields{
+		"build-date": versionObj.BuildDate,
+		"git-commit": versionObj.GitCommit,
+		"version":    versionObj.Version,
+	}).Infof("Starting %s", projectName)
+
 	kubeClient, err := getKubernetesClient()
 	if err != nil {
-		logrus.Error(err)
-		os.Exit(1)
+		logrus.Fatalf("Cannot create a Kubernetes client: %v", err)
 	}
 
 	// Add Kubernetes client to context
