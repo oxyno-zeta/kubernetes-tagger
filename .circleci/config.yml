@@ -33,10 +33,12 @@ jobs:
       - run: make test
 workflows:
   version: 2
-  lint_and_build:
+  project:
     jobs:
       - lint
-      - build
-  test:
-    jobs:
-      - test
+      - build:
+          requires:
+            - lint
+      - test:
+          requires:
+            - build
