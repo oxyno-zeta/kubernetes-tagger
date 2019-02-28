@@ -76,6 +76,14 @@
   version = "v0.5"
 
 [[projects]]
+  branch = "master"
+  digest = "1:b7cb6054d3dff43b38ad2e92492f220f57ae6087ee797dca298139776749ace8"
+  name = "github.com/golang/groupcache"
+  packages = ["lru"]
+  pruneopts = "UT"
+  revision = "5b532d6fd5efaf7fa130d4e859a2fde0fc3a9e1b"
+
+[[projects]]
   digest = "1:17fe264ee908afc795734e8c4e63db2accabaf57326dbf21763a7d6b86096260"
   name = "github.com/golang/protobuf"
   packages = [
@@ -463,7 +471,7 @@
   version = "kubernetes-1.13.0"
 
 [[projects]]
-  digest = "1:846bcc1ec56accfcb542fa8834d3013b64e7930eb6e9789a7be1bb6448567265"
+  digest = "1:31a151da1d879486aa0a34e82fbe0554edd81f4117e8594640a9ae90be0d3d0f"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/errors",
@@ -494,16 +502,19 @@
     "pkg/util/framer",
     "pkg/util/intstr",
     "pkg/util/json",
+    "pkg/util/mergepatch",
     "pkg/util/naming",
     "pkg/util/net",
     "pkg/util/runtime",
     "pkg/util/sets",
+    "pkg/util/strategicpatch",
     "pkg/util/validation",
     "pkg/util/validation/field",
     "pkg/util/wait",
     "pkg/util/yaml",
     "pkg/version",
     "pkg/watch",
+    "third_party/forked/golang/json",
     "third_party/forked/golang/reflect",
   ]
   pruneopts = "UT"
@@ -511,7 +522,7 @@
   version = "kubernetes-1.13.0"
 
 [[projects]]
-  digest = "1:48f1a5612997769822029087d71a62a87a0c3125259d89b2ed48e35bff6c05cc"
+  digest = "1:032912062bdb7ab2fd018235e24831f9eea6735ba875886323eae616c6088961"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
@@ -562,8 +573,11 @@
     "tools/clientcmd/api",
     "tools/clientcmd/api/latest",
     "tools/clientcmd/api/v1",
+    "tools/leaderelection",
+    "tools/leaderelection/resourcelock",
     "tools/metrics",
     "tools/pager",
+    "tools/record",
     "tools/reference",
     "transport",
     "util/buffer",
@@ -579,11 +593,27 @@
   version = "v10.0.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:9ea99376b1e8efe39febe142a09558d8ec51b7233264adf086950b4bf7044b21"
+  name = "k8s.io/component-base"
+  packages = ["config"]
+  pruneopts = "UT"
+  revision = "ebca9cef46a2513b205fffed7d60d53fc50979bb"
+
+[[projects]]
   digest = "1:e2999bf1bb6eddc2a6aa03fe5e6629120a53088926520ca3b4765f77d7ff7eab"
   name = "k8s.io/klog"
   packages = ["."]
   pruneopts = "UT"
   revision = "8139d8cb77af419532b33dfa7dd09fbc5f1d344f"
+
+[[projects]]
+  branch = "master"
+  digest = "1:03a96603922fc1f6895ae083e1e16d943b55ef0656b56965351bd87e7d90485f"
+  name = "k8s.io/kube-openapi"
+  packages = ["pkg/util/proto"]
+  pruneopts = "UT"
+  revision = "b3a7cee44a305be0a69e1b9ac03018307287e1b0"
 
 [[projects]]
   digest = "1:7719608fe0b52a4ece56c2dde37bedd95b938677d1ab0f84b8a7852e4c59f849"
@@ -610,9 +640,14 @@
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/fields",
     "k8s.io/client-go/kubernetes",
+    "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/cache",
     "k8s.io/client-go/tools/clientcmd",
+    "k8s.io/client-go/tools/leaderelection",
+    "k8s.io/client-go/tools/leaderelection/resourcelock",
+    "k8s.io/client-go/tools/record",
+    "k8s.io/component-base/config",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

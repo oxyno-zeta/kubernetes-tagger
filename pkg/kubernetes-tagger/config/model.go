@@ -11,7 +11,8 @@ type MainConfiguration struct {
 
 // Configuration configuration
 type Configuration struct {
-	AWS *AWSConfig `mapstructure:"aws"`
+	Namespace string     `mapstructure:"namespace"`
+	AWS       *AWSConfig `mapstructure:"aws"`
 }
 
 // AWSConfig AWS Configuration
