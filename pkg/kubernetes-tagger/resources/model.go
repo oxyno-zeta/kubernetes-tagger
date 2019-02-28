@@ -8,16 +8,19 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// Tag Tag structure
 type Tag struct {
 	Key   string
 	Value string
 }
 
+// TagDelta Tag delta with to add and to delete tag lists
 type TagDelta struct {
 	AddList    []*Tag
 	DeleteList []*Tag
 }
 
+// Resource Resource interface for all type of data
 type Resource interface {
 	Type() string
 	Platform() string

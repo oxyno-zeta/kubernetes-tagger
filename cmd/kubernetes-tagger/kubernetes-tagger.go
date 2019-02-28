@@ -2,7 +2,6 @@ package main
 
 import (
 	ctx "context"
-	"fmt"
 	"os"
 	"time"
 
@@ -34,7 +33,7 @@ const projectName = "kubernetes-tagger"
 // Kubernetes configuration home path
 const kubeConfig = ".kube/config"
 
-var context = &business.BusinessContext{}
+var context = &business.Context{}
 
 // Default values for leader election
 const (
@@ -73,7 +72,7 @@ func main() {
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
 		// Event only say that the file is reloading
-		fmt.Println("Config file changed:", e.Name)
+		logrus.WithField("file", e.Name).Info("Configuration file changed")
 		// Reload configuration
 		readConfiguration()
 	})
@@ -147,21 +146,18 @@ func run() {
 func readConfiguration() {
 	err := viper.ReadInConfig()
 	if err != nil {
-		logrus.Error(fmt.Errorf("Fatal error config file: %s \n", err))
-		os.Exit(1)
+		logrus.Fatalf("Fatal error reading configuration file: %v", err)
 	}
 	var cfg config.MainConfiguration
 	err = viper.Unmarshal(&cfg)
 	if err != nil {
-		logrus.Error(err)
-		os.Exit(1)
+		logrus.Fatalf("Error marshalling configuration: %v", err)
 	}
 
 	// Generate rules from rules declared in configuration
 	rules, err := rules.New(cfg.Rules)
 	if err != nil {
-		logrus.Error(err)
-		os.Exit(1)
+		logrus.Fatal(err)
 	}
 
 	// Update context

@@ -1,8 +1,3 @@
-/*
- * Author: Alexandre Havrileck (Oxyno-zeta)
- * Date: 28/02/2019
- * Licence: See Readme
- */
 package business
 
 import (
@@ -15,26 +10,27 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-type BusinessContext struct {
+// Context Business context
+type Context struct {
 	KubernetesClient  *kubernetes.Clientset
 	MainConfiguration *config.MainConfiguration
 	Rules             []*rules.Rule
 }
 
-func (context *BusinessContext) handlePersistentVolumeAdd(obj interface{}) {
+func (context *Context) handlePersistentVolumeAdd(obj interface{}) {
 	pv := obj.(*v1.PersistentVolume)
 	context.runForPV(pv)
 }
-func (context *BusinessContext) handlePersistentVolumeDelete(obj interface{}) {
+func (context *Context) handlePersistentVolumeDelete(obj interface{}) {
 	// Nothing to do
 }
 
-func (context *BusinessContext) handlePersistentVolumeUpdate(old, current interface{}) {
+func (context *Context) handlePersistentVolumeUpdate(old, current interface{}) {
 	currentPersistentVolume := current.(*v1.PersistentVolume)
 	context.runForPV(currentPersistentVolume)
 }
 
-func (context *BusinessContext) runForPV(pv *v1.PersistentVolume) {
+func (context *Context) runForPV(pv *v1.PersistentVolume) {
 	resource, err := resources.New(context.KubernetesClient, pv, context.MainConfiguration.Config)
 	if err != nil {
 		fmt.Println(err)

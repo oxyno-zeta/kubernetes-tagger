@@ -1,8 +1,3 @@
-/*
- * Author: Alexandre Havrileck (Oxyno-zeta)
- * Date: 28/02/2019
- * Licence: See Readme
- */
 package business
 
 import (
@@ -13,7 +8,8 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-func WatchPersistentVolumes(context *BusinessContext) {
+// WatchPersistentVolumes Watch persistent volumes
+func WatchPersistentVolumes(context *Context) {
 
 	// Watch for persistent volume
 	watchList := cache.NewListWatchFromClient(
