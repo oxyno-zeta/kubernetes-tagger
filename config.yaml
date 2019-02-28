@@ -1,0 +1,28 @@
+config:
+  aws:
+    region: eu-west-3
+
+rules:
+  - tag: yyes
+    query: persistentvolume.phase
+    action: add
+  - tag: boubou
+    query: persistentvolumeclaim.namespace
+    action: add
+  - tag: pp
+    value: random
+    action: add
+  - tag: louis
+    value: louis
+    action: add
+    when:
+      - condition: persistentvolumeclaim.namespace
+        value: elk
+        operator: Equal
+  - tag: pp2
+    value: MMMMMMMMMMPPP
+    action: add
+  - tag: oo
+    action: delete
+  - tag: tag2
+    action: delete
