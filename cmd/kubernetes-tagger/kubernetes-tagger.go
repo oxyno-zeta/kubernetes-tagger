@@ -109,7 +109,7 @@ func main() {
 	// Create new resource lock
 	lock, err := resourcelock.New(
 		leaderElection.ResourceLock,
-		context.MainConfiguration.Config.Namespace,
+		context.Configuration.Namespace,
 		projectName,
 		kubeClient.CoreV1(),
 		resourcelock.ResourceLockConfig{
@@ -156,7 +156,7 @@ func readConfiguration() {
 	if err != nil {
 		logrus.Fatalf("Fatal error reading configuration file: %v", err)
 	}
-	var cfg config.MainConfiguration
+	var cfg config.Configuration
 	err = viper.Unmarshal(&cfg)
 	if err != nil {
 		logrus.Fatalf("Error marshalling configuration: %v", err)
@@ -170,7 +170,7 @@ func readConfiguration() {
 
 	// Update context
 	context.Rules = rules
-	context.MainConfiguration = &cfg
+	context.Configuration = &cfg
 }
 
 // TODO Improve this to use configuration flags

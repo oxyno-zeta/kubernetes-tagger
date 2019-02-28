@@ -12,9 +12,9 @@ import (
 
 // Context Business context
 type Context struct {
-	KubernetesClient  *kubernetes.Clientset
-	MainConfiguration *config.MainConfiguration
-	Rules             []*rules.Rule
+	KubernetesClient *kubernetes.Clientset
+	Configuration    *config.Configuration
+	Rules            []*rules.Rule
 }
 
 func (context *Context) handlePersistentVolumeAdd(obj interface{}) {
@@ -31,7 +31,7 @@ func (context *Context) handlePersistentVolumeUpdate(old, current interface{}) {
 }
 
 func (context *Context) runForPV(pv *v1.PersistentVolume) {
-	resource, err := resources.New(context.KubernetesClient, pv, context.MainConfiguration.Config)
+	resource, err := resources.New(context.KubernetesClient, pv, context.Configuration)
 	if err != nil {
 		fmt.Println(err)
 		return

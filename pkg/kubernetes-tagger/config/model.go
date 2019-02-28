@@ -3,16 +3,11 @@ package config
 // RecommendedConfigFileName Recommended Configuration File Name
 const RecommendedConfigFileName = "config"
 
-// MainConfiguration Main Configuration
-type MainConfiguration struct {
-	Config *Configuration `mapstructure:"config"`
-	Rules  []*RuleConfig  `mapstructure:"rules"`
-}
-
 // Configuration configuration
 type Configuration struct {
-	Namespace string     `mapstructure:"namespace"`
-	AWS       *AWSConfig `mapstructure:"aws"`
+	Namespace string        `mapstructure:"namespace"`
+	AWS       *AWSConfig    `mapstructure:"aws"`
+	Rules     []*RuleConfig `mapstructure:"rules"`
 }
 
 // AWSConfig AWS Configuration
