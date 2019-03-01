@@ -1,8 +1,6 @@
 package resources
 
 import (
-	"errors"
-
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/config"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
@@ -39,5 +37,5 @@ func New(k8sClient *kubernetes.Clientset, pv *v1.PersistentVolume, config *confi
 		}
 		return res, nil
 	}
-	return nil, errors.New("Not supported")
+	return nil, nil
 }

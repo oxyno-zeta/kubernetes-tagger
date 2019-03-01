@@ -36,6 +36,10 @@ func (context *Context) runForPV(pv *v1.PersistentVolume) {
 		fmt.Println(err)
 		return
 	}
+	if resource == nil {
+		// No resource available
+		return
+	}
 	// Check if resource can be processed
 	if !resource.CanBeProcessed() {
 		return
