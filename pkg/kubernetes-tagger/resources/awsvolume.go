@@ -118,9 +118,9 @@ func (av *AWSVolume) GetAvailableTagValues() (map[string]interface{}, error) {
 	return availableTags, nil
 }
 
-// TODO Need to check AWS Limits before sending
 // ManageTags Manage tags on resource
 func (av *AWSVolume) ManageTags(delta *TagDelta) error {
+	// TODO Need to check AWS Limits before sending
 	av.log.WithField("delta", delta).Debug("Manage tags on resource")
 	av.log.Info("Manage tags on resource")
 	// Get EC2 AWS Client
