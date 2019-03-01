@@ -5,6 +5,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/oxyno-zeta/kubernetes-tagger.save/code/pkg/kubernetes-tagger/utils"
+
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/version"
 
 	"github.com/fsnotify/fsnotify"
@@ -180,14 +182,17 @@ func getKubernetesClient() (*kubernetes.Clientset, error) {
 
 	kubeConfigPath := filepath.Join(os.Getenv("HOME"), kubeConfig)
 
-	_, err := os.Stat(kubeConfigPath)
+	exists, err := utils.Exists(kubeConfigPath)
+	if err != nil {
+		return nil, err
+	}
 
-	if os.IsNotExist(err) {
-		logrus.Info("Using in cluster config")
-		config, err = rest.InClusterConfig()
-	} else {
+	if exists {
 		logrus.WithFields(logrus.Fields{"config": kubeConfigPath}).Info("Using out of cluster config")
 		config, err = clientcmd.BuildConfigFromFlags("", kubeConfigPath)
+	} else {
+		logrus.Info("Using in cluster config")
+		config, err = rest.InClusterConfig()
 	}
 	if err != nil {
 		return nil, err
