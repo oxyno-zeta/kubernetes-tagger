@@ -1,9 +1,11 @@
 package resources
 
 import (
-	"errors"
+	"fmt"
 	"net/url"
 	"strings"
+
+	"github.com/Sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -23,6 +25,7 @@ type AWSVolume struct {
 	persistentVolume *v1.PersistentVolume
 	k8sClient        *kubernetes.Clientset
 	volumeID         string
+	log              *logrus.Entry
 }
 
 // AWSVolumeResourceType AWS Volume Resource Type
@@ -51,10 +54,17 @@ func (av *AWSVolume) CanBeProcessed() bool {
 func newAWSVolume(k8sClient *kubernetes.Clientset, pv *v1.PersistentVolume, config *config.Configuration) (*AWSVolume, error) {
 	url, err := url.Parse(pv.Spec.AWSElasticBlockStore.VolumeID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Cannot parse persistent volume AWS Volume Id: %v", err)
 	}
 	volumeID := url.Path
 	volumeID = strings.Trim(volumeID, "/")
+
+	// Create logger
+	log := logrus.WithFields(logrus.Fields{
+		"type":                 AWSVolumeResourceType,
+		"platform":             AWSResourcePlatform,
+		"persistentVolumeName": pv.Name,
+	})
 
 	awsConfig := config.AWS
 	instance := AWSVolume{
@@ -64,6 +74,7 @@ func newAWSVolume(k8sClient *kubernetes.Clientset, pv *v1.PersistentVolume, conf
 		persistentVolume: pv,
 		k8sClient:        k8sClient,
 		volumeID:         volumeID,
+		log:              log,
 	}
 	return &instance, nil
 }
@@ -107,8 +118,11 @@ func (av *AWSVolume) GetAvailableTagValues() (map[string]interface{}, error) {
 	return availableTags, nil
 }
 
+// TODO Need to check AWS Limits before sending
 // ManageTags Manage tags on resource
 func (av *AWSVolume) ManageTags(delta *TagDelta) error {
+	av.log.WithField("delta", delta).Debug("Manage tags on resource")
+	av.log.Info("Manage tags on resource")
 	// Get EC2 AWS Client
 	svc, err := av.getAWSEC2Client()
 	if err != nil {
@@ -119,6 +133,7 @@ func (av *AWSVolume) ManageTags(delta *TagDelta) error {
 
 	// Check if tags needs to be added
 	if len(delta.AddList) > 0 {
+		av.log.WithField("delta", delta).Debug("Add list detected. Begin request to AWS.")
 		awsAddTags := make([]*ec2.Tag, 0)
 		for i := 0; i < len(delta.AddList); i++ {
 			tag := delta.AddList[i]
@@ -133,12 +148,14 @@ func (av *AWSVolume) ManageTags(delta *TagDelta) error {
 		if err != nil {
 			return err
 		}
+		av.log.WithField("delta", delta).Debug("Add list successfully managed")
 	}
 
 	// Delete case
 
 	// Check if tags needs to be removed
 	if len(delta.DeleteList) > 0 {
+		av.log.WithField("delta", delta).Debug("Delete list detected. Begin request to AWS.")
 		awsDeleteTags := make([]*ec2.Tag, 0)
 		for i := 0; i < len(delta.DeleteList); i++ {
 			tag := delta.DeleteList[i]
@@ -153,6 +170,7 @@ func (av *AWSVolume) ManageTags(delta *TagDelta) error {
 		if err != nil {
 			return err
 		}
+		av.log.WithField("delta", delta).Debug("Delete list successfully managed")
 	}
 
 	return nil
@@ -160,6 +178,7 @@ func (av *AWSVolume) ManageTags(delta *TagDelta) error {
 
 // GetActualTags Get actual tags.
 func (av *AWSVolume) GetActualTags() ([]*Tag, error) {
+	av.log.Info("Get actual tags on resource")
 	// Get EC2 AWS Client
 	svc, err := av.getAWSEC2Client()
 	if err != nil {
@@ -176,8 +195,7 @@ func (av *AWSVolume) GetActualTags() ([]*Tag, error) {
 	}
 	volumes := output.Volumes
 	if len(volumes) != 1 {
-		// TODO Better management of error
-		return nil, errors.New("Can't find volume in AWS from volume id")
+		return nil, fmt.Errorf("Can't find volume in AWS from volume id \"%s\"", av.volumeID)
 	}
 	volume := volumes[0]
 

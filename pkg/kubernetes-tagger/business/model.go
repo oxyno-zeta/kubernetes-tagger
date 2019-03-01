@@ -1,8 +1,7 @@
 package business
 
 import (
-	"fmt"
-
+	"github.com/Sirupsen/logrus"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/config"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/resources"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/rules"
@@ -19,53 +18,62 @@ type Context struct {
 
 func (context *Context) handlePersistentVolumeAdd(obj interface{}) {
 	pv := obj.(*v1.PersistentVolume)
-	context.runForPV(pv)
+	log := logrus.WithField("persistentVolumeName", pv.Name)
+	log.Debug("New persistent volume added detected")
+	err := context.runForPV(pv)
+	if err != nil {
+		log.Errorf("Error managing persistent volume: %v", err)
+	}
 }
 func (context *Context) handlePersistentVolumeDelete(obj interface{}) {
 	// Nothing to do
+	pv := obj.(*v1.PersistentVolume)
+	log := logrus.WithField("persistentVolumeName", pv.Name)
+	log.Debug("New persistent volume deleted detected")
 }
 
 func (context *Context) handlePersistentVolumeUpdate(old, current interface{}) {
 	currentPersistentVolume := current.(*v1.PersistentVolume)
-	context.runForPV(currentPersistentVolume)
+	log := logrus.WithField("persistentVolumeName", currentPersistentVolume.Name)
+	log.Debug("New persistent volume updated detected")
+	err := context.runForPV(currentPersistentVolume)
+	if err != nil {
+		logrus.WithField("persistentVolumeName", currentPersistentVolume.Name).Errorf("Error managing persistent volume: %v", err)
+	}
 }
 
-func (context *Context) runForPV(pv *v1.PersistentVolume) {
+func (context *Context) runForPV(pv *v1.PersistentVolume) error {
 	resource, err := resources.New(context.KubernetesClient, pv, context.Configuration)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 	if resource == nil {
 		// No resource available
-		return
+		return nil
 	}
 	// Check if resource can be processed
 	if !resource.CanBeProcessed() {
-		return
+		return nil
 	}
 
 	// Get actual tags
 	actualTags, err := resource.GetActualTags()
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	availableTagValues, err := resource.GetAvailableTagValues()
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 
 	delta, err := rules.CalculateTags(actualTags, availableTagValues, context.Rules)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
 	err = resource.ManageTags(delta)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err
 	}
+	return nil
 }

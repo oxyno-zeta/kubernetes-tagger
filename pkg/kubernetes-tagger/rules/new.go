@@ -6,6 +6,15 @@ import (
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/config"
 )
 
+// ErrRuleEmptyWhenCondition Error when "when condition" is empty
+var ErrRuleEmptyWhenCondition = errors.New("when condition mustn't be empty")
+
+// ErrRuleConditionOperatorNotSupported Rule condition operator not supported
+var ErrRuleConditionOperatorNotSupported = errors.New("condition operator not supported")
+
+// ErrRuleActionNotSupported Rule action not supported.
+var ErrRuleActionNotSupported = errors.New("rule action not supported")
+
 // New Create rules array from ruleConfig with validation
 func New(ruleConfigs []*config.RuleConfig) ([]*Rule, error) {
 	rules := make([]*Rule, 0)
@@ -25,7 +34,7 @@ func newFromRuleConfig(ruleConfig *config.RuleConfig) (*Rule, error) {
 	for i := 0; i < len(ruleConfig.When); i++ {
 		conditionConfig := ruleConfig.When[i]
 		if conditionConfig.Condition == "" {
-			return nil, errors.New("In when condition mustn't be empty")
+			return nil, ErrRuleEmptyWhenCondition
 		}
 
 		condition := &Condition{
@@ -39,8 +48,7 @@ func newFromRuleConfig(ruleConfig *config.RuleConfig) (*Rule, error) {
 		case string(ConditionOperatorNotEqual):
 			condition.Operator = ConditionOperatorNotEqual
 		default:
-			// TODO manage errors
-			return nil, errors.New("Condition operator not supported")
+			return nil, ErrRuleConditionOperatorNotSupported
 		}
 		conditions = append(conditions, condition)
 	}
@@ -56,8 +64,7 @@ func newFromRuleConfig(ruleConfig *config.RuleConfig) (*Rule, error) {
 	case string(RuleActionDelete):
 		rule.Action = RuleActionDelete
 	default:
-		// TODO manage errors
-		return nil, errors.New("Rule action not supported")
+		return nil, ErrRuleActionNotSupported
 	}
 	return rule, nil
 }

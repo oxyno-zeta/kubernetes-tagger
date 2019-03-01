@@ -2,18 +2,26 @@ package rules
 
 import (
 	"encoding/json"
+	"errors"
+
+	"github.com/Sirupsen/logrus"
 
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/resources"
 	"github.com/thoas/go-funk"
 	"github.com/tidwall/gjson"
 )
 
+// ErrCannotStringifyAvailableTagValues Cannot stringify available tag values
+var ErrCannotStringifyAvailableTagValues = errors.New("error cannot transform to string available tag values")
+
 // CalculateTags Calculate tags delta to add/update or delete tags on resource
 func CalculateTags(actualTags []*resources.Tag, availableTagValues map[string]interface{}, rules []*Rule) (*resources.TagDelta, error) {
+	logrus.Debug("Begin calculate tags from available values and rules")
 	// Create GJSON result to filter tags
 	jsonBytes, err := json.Marshal(availableTagValues)
 	if err != nil {
-		return nil, err
+		logrus.Debugf("Error: cannot stringify available tag values: %v", err)
+		return nil, ErrCannotStringifyAvailableTagValues
 	}
 	jsonString := string(jsonBytes)
 	gjsonResult := gjson.Parse(jsonString)
@@ -52,6 +60,8 @@ func CalculateTags(actualTags []*resources.Tag, availableTagValues map[string]in
 				tag.Value = filterResult[0].Value
 				// Add it to delete list
 				deleteList = append(deleteList, tag)
+			} else {
+				logrus.Infof("Tag %s is already deleted -> skipping", tag.Key)
 			}
 		} else {
 			// Add case
@@ -63,7 +73,7 @@ func CalculateTags(actualTags []*resources.Tag, availableTagValues map[string]in
 				queryResult := gjsonResult.Get(rule.Query).String()
 				if queryResult == "" {
 					// Stop here, cannot get value
-					// TODO Log
+					logrus.Infof("Tag %s with query %s doesn't give any results -> skip it", rule.Tag, rule.Query)
 					continue
 				}
 				tag.Value = queryResult
@@ -80,6 +90,8 @@ func CalculateTags(actualTags []*resources.Tag, availableTagValues map[string]in
 			// Check if tag already exists and need to be added / updated
 			if len(filterResult) == 0 {
 				addList = append(addList, tag)
+			} else {
+				logrus.Infof("Tag %s with value \"%s\" is already present -> skipping", tag.Key, tag.Value)
 			}
 		}
 	}
