@@ -90,6 +90,7 @@ func (av *AWSVolume) GetAvailableTagValues() (map[string]interface{}, error) {
 	pvTags["name"] = av.persistentVolume.Name
 	pvTags["phase"] = av.persistentVolume.Status.Phase
 	pvTags["reclaimpolicy"] = av.persistentVolume.Spec.PersistentVolumeReclaimPolicy
+	pvTags["storageclassname"] = av.persistentVolume.Spec.StorageClassName
 	availableTags["persistentvolume"] = pvTags
 
 	// If pvc exists, create tag values
