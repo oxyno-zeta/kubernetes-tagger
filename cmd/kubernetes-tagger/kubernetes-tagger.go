@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/oxyno-zeta/kubernetes-tagger.save/code/pkg/kubernetes-tagger/utils"
+	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/utils"
 
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/version"
 
