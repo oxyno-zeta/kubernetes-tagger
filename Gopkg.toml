@@ -68,3 +68,7 @@
 [[constraint]]
   branch = "master"
   name = "k8s.io/component-base"
+
+[[constraint]]
+  name = "github.com/spf13/pflag"
+  version = "1.0.1"

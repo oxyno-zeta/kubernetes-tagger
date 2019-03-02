@@ -632,6 +632,7 @@
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/ec2",
     "github.com/fsnotify/fsnotify",
+    "github.com/spf13/pflag",
     "github.com/spf13/viper",
     "github.com/thoas/go-funk",
     "github.com/tidwall/gjson",

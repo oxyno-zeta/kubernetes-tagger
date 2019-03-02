@@ -14,8 +14,6 @@ import (
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/config"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/rules"
 
-	"path/filepath"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
 	v1 "k8s.io/api/core/v1"
@@ -33,9 +31,6 @@ import (
 
 // Project name used for configuration path
 const projectName = "kubernetes-tagger"
-
-// Kubernetes configuration home path
-const kubeConfig = ".kube/config"
 
 var context = &business.Context{}
 
@@ -64,17 +59,7 @@ func main() {
 	}
 
 	// Viper configuration
-	// Add default values
-	viper.SetDefault("config.namespace", "kube-system")
-	// Add config file name
-	viper.SetConfigName(config.RecommendedConfigFileName)
-	// Add config possible path
-	viper.AddConfigPath("/etc/" + projectName + "/")
-	viper.AddConfigPath("$HOME/." + projectName)
-	viper.AddConfigPath(".")
-	// Watch configuration file change
-	viper.WatchConfig()
-	viper.OnConfigChange(func(e fsnotify.Event) {
+	configureViper(func(e fsnotify.Event) {
 		// Event only say that the file is reloading
 		logrus.WithField("file", e.Name).Info("Configuration file changed")
 		// Reload configuration
@@ -175,12 +160,9 @@ func readConfiguration() {
 	context.Configuration = &cfg
 }
 
-// TODO Improve this to use configuration flags
-// Take example on this: https://github.com/kubernetes/autoscaler/blob/8944afd9016dbda091066d2c6500af526caf6315/cluster-autoscaler/main.go
 func getKubernetesClient() (*kubernetes.Clientset, error) {
 	var config *rest.Config
-
-	kubeConfigPath := filepath.Join(os.Getenv("HOME"), kubeConfig)
+	kubeConfigPath := context.Configuration.Kubeconfig
 
 	exists, err := utils.Exists(kubeConfigPath)
 	if err != nil {
@@ -197,7 +179,6 @@ func getKubernetesClient() (*kubernetes.Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
-	// TODO Add request timeout in the configuration (using flags)
 	logrus.WithField("host", config.Host).Info("Create Kubernetes client")
 	return kubernetes.NewForConfig(config)
 }
