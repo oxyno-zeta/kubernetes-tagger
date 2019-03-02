@@ -75,6 +75,9 @@ func main() {
 		"version":    versionObj.Version,
 	}).Infof("Starting %s", projectName)
 
+	// Go routine for server listener
+	go serve()
+
 	kubeClient, err := getKubernetesClient()
 	if err != nil {
 		logrus.Fatalf("Cannot create a Kubernetes client: %v", err)

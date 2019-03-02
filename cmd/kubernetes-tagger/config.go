@@ -19,6 +19,7 @@ func configureViper(onChange func(e fsnotify.Event)) {
 	// Flags
 	flag.String("namespace", "kube-system", "Namespace where "+projectName+" is deployed")
 	flag.String("kubeconfig", kubeConfigPath, "Kubernetes configuration file path")
+	flag.String("address", ":8085", "The address to expose health and prometheus metrics")
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)

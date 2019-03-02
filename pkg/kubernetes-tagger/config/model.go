@@ -7,6 +7,7 @@ const RecommendedConfigFileName = "config"
 type Configuration struct {
 	Namespace  string        `mapstructure:"namespace"`
 	Kubeconfig string        `mapstructure:"kubeconfig"`
+	Address    string        `mapstructure:"address"`
 	AWS        *AWSConfig    `mapstructure:"aws"`
 	Rules      []*RuleConfig `mapstructure:"rules"`
 }
