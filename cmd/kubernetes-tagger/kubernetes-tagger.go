@@ -3,7 +3,6 @@ package main
 import (
 	ctx "context"
 	"os"
-	"time"
 
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/utils"
 
@@ -17,14 +16,12 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/viper"
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
-	componentbaseconfig "k8s.io/component-base/config"
 
 	kube_record "k8s.io/client-go/tools/record"
 )
@@ -33,23 +30,6 @@ import (
 const projectName = "kubernetes-tagger"
 
 var context = &business.Context{}
-
-// Default values for leader election
-const (
-	defaultLeaseDuration = 15 * time.Second
-	defaultRenewDeadline = 10 * time.Second
-	defaultRetryPeriod   = 2 * time.Second
-)
-
-func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConfiguration {
-	return componentbaseconfig.LeaderElectionConfiguration{
-		LeaderElect:   true,
-		LeaseDuration: metav1.Duration{Duration: defaultLeaseDuration},
-		RenewDeadline: metav1.Duration{Duration: defaultRenewDeadline},
-		RetryPeriod:   metav1.Duration{Duration: defaultRetryPeriod},
-		ResourceLock:  resourcelock.EndpointsResourceLock,
-	}
-}
 
 func main() {
 	// Get Hostname to have unique id for container
@@ -67,6 +47,9 @@ func main() {
 	})
 
 	readConfiguration()
+
+	// Configure logger
+	configureLogger()
 
 	versionObj := version.GetVersion()
 	logrus.WithFields(logrus.Fields{

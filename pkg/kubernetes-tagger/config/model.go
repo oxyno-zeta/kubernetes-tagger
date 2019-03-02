@@ -8,6 +8,8 @@ type Configuration struct {
 	Namespace  string        `mapstructure:"namespace"`
 	Kubeconfig string        `mapstructure:"kubeconfig"`
 	Address    string        `mapstructure:"address"`
+	LogLevel   string        `mapstructure:"loglevel"`
+	LogFormat  string        `mapstructure:"logformat"`
 	AWS        *AWSConfig    `mapstructure:"aws"`
 	Rules      []*RuleConfig `mapstructure:"rules"`
 }
