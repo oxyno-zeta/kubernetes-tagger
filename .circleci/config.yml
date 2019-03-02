@@ -31,6 +31,16 @@ jobs:
           keys:
             - deps-{{ .Branch }}-{{ .Revision }}
       - run: make test
+  release:
+    docker:
+      - image: circleci/golang:1.11
+    working_directory: /go/src/github.com/oxyno-zeta/kubernetes-tagger
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - deps-{{ .Branch }}-{{ .Revision }}
+      - run: make release
 workflows:
   version: 2
   project:
@@ -40,5 +50,8 @@ workflows:
           requires:
             - lint
       - test:
+          requires:
+            - build
+      - release:
           requires:
             - build

@@ -58,6 +58,20 @@ build-cross: clean dep
 
 .PHONY: release
 release: build-cross
+	cp Dockerfile $(DISTDIR)/bin/$(BINARY_VERSION)/linux-amd64
+	docker build -t oxynozeta/kubernetes-tagger:$(BINARY_VERSION) $(DISTDIR)/bin/$(BINARY_VERSION)/linux-amd64
+
+.PHONY: docker-latest
+docker-latest:
+	docker tag oxynozeta/kubernetes-tagger:$(BINARY_VERSION) oxynozeta/kubernetes-tagger:latest
+
+.PHONY: docker-publish
+docker-publish:
+	docker push oxynozeta/kubernetes-tagger:$(BINARY_VERSION)
+
+.PHONY: docker-publish-latest
+docker-publish-latest:
+	docker push oxynozeta/kubernetes-tagger:latest
 
 test: dep ## Run unittests
 	$(GO) test -short ${PKG_LIST}
