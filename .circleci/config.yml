@@ -37,6 +37,7 @@ jobs:
     working_directory: /go/src/github.com/oxyno-zeta/kubernetes-tagger
     steps:
       - checkout
+      - setup_remote_docker
       - restore_cache:
           keys:
             - deps-{{ .Branch }}-{{ .Revision }}
