@@ -1,3 +1,8 @@
+# Configuration
+
+Here is an example of configuration you can have.
+
+```yaml
 # Namespace where kubernetes-tagger is installed
 # namespace: "kube-system"
 
@@ -39,3 +44,4 @@ rules:
   # Rule definition delete tag
   - tag: tag-to-be-deleted
     action: delete
+```
