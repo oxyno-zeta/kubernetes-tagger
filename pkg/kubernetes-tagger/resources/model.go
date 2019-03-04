@@ -23,7 +23,7 @@ type Resource interface {
 	Type() string
 	Platform() string
 	CanBeProcessed() bool
-	CheckConfigurationValid() error
+	CheckIfConfigurationValid() error
 	GetAvailableTagValues() (map[string]interface{}, error)
 	GetActualTags() ([]*Tag, error)
 	ManageTags(delta *TagDelta) error

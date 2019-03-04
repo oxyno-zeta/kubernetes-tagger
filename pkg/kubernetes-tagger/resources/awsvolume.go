@@ -83,8 +83,8 @@ func isAWSVolumeResource(pv *v1.PersistentVolume) bool {
 	return pv.Spec.AWSElasticBlockStore != nil
 }
 
-// CheckConfigurationValid Check if configuration is valid
-func (av *AWSVolume) CheckConfigurationValid() error {
+// CheckIfConfigurationValid Check if configuration is valid
+func (av *AWSVolume) CheckIfConfigurationValid() error {
 	if av.awsConfig == nil {
 		return ErrEmptyAWSConfiguration
 	}
