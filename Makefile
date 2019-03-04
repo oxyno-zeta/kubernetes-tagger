@@ -74,10 +74,11 @@ docker-publish-latest:
 	docker push oxynozeta/kubernetes-tagger:latest
 
 test: dep ## Run unittests
-	$(GO) test -short ${PKG_LIST}
+	$(GO) test -short -cover -coverprofile=c.out ${PKG_LIST}
 
-race: dep ## Run data race detector
-	$(GO) test -race -short ${PKG_LIST}
+.PHONY: coverage-report
+coverage-report:
+	$(GO) tool cover -html=c.out -o coverage.html 
 
 .PHONY: clean
 clean:

@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -12,10 +13,14 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/config"
 	v1 "k8s.io/api/core/v1"
-	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
+
+// ErrEmptyAWSConfiguration Error Empty AWS Configuration
+var ErrEmptyAWSConfiguration = errors.New("AWS configuration is empty")
+
+// ErrEmptyAWSRegionConfiguration Error Empty AWS Region Configuration
+var ErrEmptyAWSRegionConfiguration = errors.New("AWS Region is empty in configuration")
 
 // AWSVolume AWS Volume
 type AWSVolume struct {
@@ -27,12 +32,6 @@ type AWSVolume struct {
 	volumeID         string
 	log              *logrus.Entry
 }
-
-// AWSVolumeResourceType AWS Volume Resource Type
-const AWSVolumeResourceType = "volume"
-
-// AWSResourcePlatform AWS Resource Platform
-const AWSResourcePlatform = "aws"
 
 // Type Get type
 func (av *AWSVolume) Type() string {
@@ -84,9 +83,20 @@ func isAWSVolumeResource(pv *v1.PersistentVolume) bool {
 	return pv.Spec.AWSElasticBlockStore != nil
 }
 
+// CheckIfConfigurationValid Check if configuration is valid
+func (av *AWSVolume) CheckIfConfigurationValid() error {
+	if av.awsConfig == nil {
+		return ErrEmptyAWSConfiguration
+	}
+	if av.awsConfig.Region == "" {
+		return ErrEmptyAWSRegionConfiguration
+	}
+	return nil
+}
+
 // GetAvailableTagValues Get available tags
 func (av *AWSVolume) GetAvailableTagValues() (map[string]interface{}, error) {
-	pvc, err := av.getPersistentVolumeClaim()
+	pvc, err := getPersistentVolumeClaim(av.persistentVolume, av.k8sClient)
 	if err != nil {
 		return nil, err
 	}
@@ -221,17 +231,4 @@ func (av *AWSVolume) getAWSEC2Client() (*ec2.EC2, error) {
 	// Create EC2 service client
 	svc := ec2.New(sess)
 	return svc, nil
-}
-
-func (av *AWSVolume) getPersistentVolumeClaim() (*v1.PersistentVolumeClaim, error) {
-	claimRef := av.persistentVolume.Spec.ClaimRef
-	if claimRef == nil {
-		return nil, nil
-	}
-
-	pvc, err := av.k8sClient.CoreV1().PersistentVolumeClaims(claimRef.Namespace).Get(claimRef.Name, metav1.GetOptions{})
-	if err != nil && !k8serrors.IsNotFound(err) {
-		return nil, err
-	}
-	return pvc, nil
 }

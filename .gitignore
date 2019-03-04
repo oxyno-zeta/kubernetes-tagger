@@ -333,3 +333,6 @@ ASALocalRun/
 bin/
 vendor/
 _dist/
+c.out
+coverage.html
+

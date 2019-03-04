@@ -56,6 +56,12 @@ func (context *Context) runForPV(pv *v1.PersistentVolume) error {
 		return nil
 	}
 
+	// Check if configuration is valid before continue
+	err = resource.CheckIfConfigurationValid()
+	if err != nil {
+		return err
+	}
+
 	// Get actual tags
 	actualTags, err := resource.GetActualTags()
 	if err != nil {
