@@ -13,7 +13,7 @@ const AWSVolumeResourceType = "volume"
 // AWSResourcePlatform AWS Resource Platform
 const AWSResourcePlatform = "aws"
 
-func getPersistentVolumeClaim(persistentVolume *v1.PersistentVolume, k8sClient *kubernetes.Clientset) (*v1.PersistentVolumeClaim, error) {
+func getPersistentVolumeClaim(persistentVolume *v1.PersistentVolume, k8sClient kubernetes.Interface) (*v1.PersistentVolumeClaim, error) {
 	claimRef := persistentVolume.Spec.ClaimRef
 	if claimRef == nil {
 		return nil, nil
