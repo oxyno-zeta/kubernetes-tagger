@@ -57,7 +57,7 @@ func (context *Context) runForPV(pv *v1.PersistentVolume) error {
 	}
 
 	// Check if configuration is valid before continue
-	err := resource.CheckIfConfigurationValid()
+	err = resource.CheckIfConfigurationValid()
 	if err != nil {
 		return err
 	}
