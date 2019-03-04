@@ -17,10 +17,10 @@ import (
 )
 
 // ErrEmptyAWSConfiguration Error Empty AWS Configuration
-const ErrEmptyAWSConfiguration = errors.New("AWS configuration is empty")
+var ErrEmptyAWSConfiguration = errors.New("AWS configuration is empty")
 
 // ErrEmptyAWSRegionConfiguration Error Empty AWS Region Configuration
-const ErrEmptyAWSRegionConfiguration = errors.New("AWS Region is empty in configuration")
+var ErrEmptyAWSRegionConfiguration = errors.New("AWS Region is empty in configuration")
 
 // AWSVolume AWS Volume
 type AWSVolume struct {
