@@ -51,10 +51,6 @@ func (context *Context) runForPV(pv *v1.PersistentVolume) error {
 		// No resource available
 		return nil
 	}
-	// Check if resource can be processed
-	if !resource.CanBeProcessed() {
-		return nil
-	}
 
 	// Get actual tags
 	actualTags, err := resource.GetActualTags()

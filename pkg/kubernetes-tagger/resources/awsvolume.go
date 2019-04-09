@@ -36,12 +36,6 @@ func (av *AWSVolume) Platform() string {
 	return av.resourcePlatform
 }
 
-// CanBeProcessed Can be processed ?
-func (av *AWSVolume) CanBeProcessed() bool {
-	// It is always true in this case
-	return true
-}
-
 // newAWSVolume Generate a new AWS Volume
 func newAWSVolume(k8sClient *kubernetes.Clientset, pv *v1.PersistentVolume, config *config.Configuration) (*AWSVolume, error) {
 	url, err := url.Parse(pv.Spec.AWSElasticBlockStore.VolumeID)
