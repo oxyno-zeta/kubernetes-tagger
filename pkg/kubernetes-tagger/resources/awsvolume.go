@@ -1,7 +1,6 @@
 package resources
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -15,12 +14,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 )
-
-// ErrEmptyAWSConfiguration Error Empty AWS Configuration
-var ErrEmptyAWSConfiguration = errors.New("AWS configuration is empty")
-
-// ErrEmptyAWSRegionConfiguration Error Empty AWS Region Configuration
-var ErrEmptyAWSRegionConfiguration = errors.New("AWS Region is empty in configuration")
 
 // AWSVolume AWS Volume
 type AWSVolume struct {
@@ -81,17 +74,6 @@ func newAWSVolume(k8sClient *kubernetes.Clientset, pv *v1.PersistentVolume, conf
 // isAWSVolumeResource returns a boolean to know if a persistent volume is an AWS Volume
 func isAWSVolumeResource(pv *v1.PersistentVolume) bool {
 	return pv.Spec.AWSElasticBlockStore != nil
-}
-
-// CheckIfConfigurationValid Check if configuration is valid
-func (av *AWSVolume) CheckIfConfigurationValid() error {
-	if av.awsConfig == nil {
-		return ErrEmptyAWSConfiguration
-	}
-	if av.awsConfig.Region == "" {
-		return ErrEmptyAWSRegionConfiguration
-	}
-	return nil
 }
 
 // GetAvailableTagValues Get available tags

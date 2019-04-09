@@ -43,10 +43,16 @@ func main() {
 		// Event only say that the file is reloading
 		logrus.WithField("file", e.Name).Info("Configuration file changed")
 		// Reload configuration
-		readConfiguration()
+		err = readConfiguration()
+		if err != nil {
+			logrus.Fatal(err)
+		}
 	})
 
-	readConfiguration()
+	err = readConfiguration()
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
 	// Configure logger
 	configureLogger()
@@ -124,7 +130,7 @@ func run() {
 	business.WatchPersistentVolumes(context)
 }
 
-func readConfiguration() {
+func readConfiguration() error {
 	err := viper.ReadInConfig()
 	if err != nil {
 		logrus.Fatalf("Fatal error reading configuration file: %v", err)
@@ -144,6 +150,9 @@ func readConfiguration() {
 	// Update context
 	context.Rules = rules
 	context.Configuration = &cfg
+
+	// Check if the configuration is valid
+	return cfg.IsValid()
 }
 
 func getKubernetesClient() (*kubernetes.Clientset, error) {

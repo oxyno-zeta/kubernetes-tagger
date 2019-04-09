@@ -18,6 +18,9 @@ Here is an example of configuration you can have.
 # Log format
 # logformat: json
 
+# Kubernetes provider
+# provider: aws
+
 # AWS configuration
 aws:
   # Region

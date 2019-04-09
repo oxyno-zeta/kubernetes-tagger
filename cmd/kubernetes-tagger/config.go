@@ -27,6 +27,7 @@ func configureViper(onChange func(e fsnotify.Event)) {
 	flag.String("address", ":8085", "The address to expose health and prometheus metrics")
 	flag.String("loglevel", "info", "Log level")
 	flag.String("logformat", "json", "Log format")
+	flag.String("provider", "aws", "Kubernetes Provider")
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.Parse()
 	viper.BindPFlags(pflag.CommandLine)
