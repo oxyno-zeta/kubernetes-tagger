@@ -127,7 +127,8 @@ func main() {
 
 func run() {
 	logrus.Info("Launch business")
-	business.WatchPersistentVolumes(context)
+	// Watch persistent volumes and services
+	business.Watch(context)
 }
 
 func readConfiguration() error {
