@@ -88,6 +88,8 @@ func isAWSLoadBalancerResource(svc *v1.Service) bool {
 func (al *AWSLoadBalancer) GetAvailableTagValues() (map[string]interface{}, error) {
 	// Begin to create available tag values
 	availableTags := make(map[string]interface{})
+	availableTags["type"] = al.Type()
+	availableTags["platform"] = al.Platform()
 	svcTags := make(map[string]interface{})
 	svcTags["name"] = al.service.Name
 	svcTags["namespace"] = al.service.Namespace
