@@ -32,7 +32,7 @@ rules:
   - tag: tag-hardcoded
     value: hardcoded-value
     action: add
-  # Rule definition add value from query
+  # Rule definition add value from query (only a value exists for your query)
   - tag: tag-query
     query: persistentvolume.phase
     action: add

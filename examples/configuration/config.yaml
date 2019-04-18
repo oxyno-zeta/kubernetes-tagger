@@ -13,6 +13,9 @@
 # Log format
 # logformat: json
 
+# Kubernetes provider
+# provider: aws
+
 # AWS configuration
 aws:
   # Region

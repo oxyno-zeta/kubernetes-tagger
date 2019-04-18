@@ -10,6 +10,7 @@ This page will show the available data structure for queries or conditions.
 | platform              | Resource platform (for example: "aws")                                                                                                     |
 | persistentvolume      | [PersistentVolumeStructure](#persistentvolumestructure) (Only if the resource is a persistent volume)                                      |
 | persistentvolumeclaim | [PersistentVolumeClaimStructure](#persistentvolumeclaimstructure) (Only when a persistent volume claim is linked to the persistent volume) |
+| service               | [Service](#service) (Only if the resource if a service)                                                                                    |
 
 ## PersistentVolumeStructure
 
@@ -31,3 +32,12 @@ This page will show the available data structure for queries or conditions.
 | namespace   | The PersistentVolumeClaim namespace                                                                 |
 | name        | The PersistentVolumeClaim name                                                                      |
 | phase       | The PersistentVolumeClaim Status phase                                                              |
+
+## Service
+
+| Key         | Description                                                                                         |
+| ----------- | --------------------------------------------------------------------------------------------------- |
+| name | The Service name |
+| namespace | The Service namespace |
+| labels      | This is the `map[string]string` got from `labels` in the Kubernetes Service Kind      |
+| annotations | This is the `map[string]string` got from `annotations` in the Kubernetes Service Kind |
