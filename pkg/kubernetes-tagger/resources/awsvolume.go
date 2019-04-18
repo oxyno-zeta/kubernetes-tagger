@@ -1,7 +1,6 @@
 package resources
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -9,18 +8,11 @@ import (
 	"github.com/Sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/config"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 )
-
-// ErrEmptyAWSConfiguration Error Empty AWS Configuration
-var ErrEmptyAWSConfiguration = errors.New("AWS configuration is empty")
-
-// ErrEmptyAWSRegionConfiguration Error Empty AWS Region Configuration
-var ErrEmptyAWSRegionConfiguration = errors.New("AWS Region is empty in configuration")
 
 // AWSVolume AWS Volume
 type AWSVolume struct {
@@ -43,12 +35,6 @@ func (av *AWSVolume) Platform() string {
 	return av.resourcePlatform
 }
 
-// CanBeProcessed Can be processed ?
-func (av *AWSVolume) CanBeProcessed() bool {
-	// It is always true in this case
-	return true
-}
-
 // newAWSVolume Generate a new AWS Volume
 func newAWSVolume(k8sClient *kubernetes.Clientset, pv *v1.PersistentVolume, config *config.Configuration) (*AWSVolume, error) {
 	url, err := url.Parse(pv.Spec.AWSElasticBlockStore.VolumeID)
@@ -60,14 +46,14 @@ func newAWSVolume(k8sClient *kubernetes.Clientset, pv *v1.PersistentVolume, conf
 
 	// Create logger
 	log := logrus.WithFields(logrus.Fields{
-		"type":                 AWSVolumeResourceType,
+		"type":                 VolumeResourceType,
 		"platform":             AWSResourcePlatform,
 		"persistentVolumeName": pv.Name,
 	})
 
 	awsConfig := config.AWS
 	instance := AWSVolume{
-		resourceType:     AWSVolumeResourceType,
+		resourceType:     VolumeResourceType,
 		resourcePlatform: AWSResourcePlatform,
 		awsConfig:        awsConfig,
 		persistentVolume: pv,
@@ -81,17 +67,6 @@ func newAWSVolume(k8sClient *kubernetes.Clientset, pv *v1.PersistentVolume, conf
 // isAWSVolumeResource returns a boolean to know if a persistent volume is an AWS Volume
 func isAWSVolumeResource(pv *v1.PersistentVolume) bool {
 	return pv.Spec.AWSElasticBlockStore != nil
-}
-
-// CheckIfConfigurationValid Check if configuration is valid
-func (av *AWSVolume) CheckIfConfigurationValid() error {
-	if av.awsConfig == nil {
-		return ErrEmptyAWSConfiguration
-	}
-	if av.awsConfig.Region == "" {
-		return ErrEmptyAWSRegionConfiguration
-	}
-	return nil
 }
 
 // GetAvailableTagValues Get available tags
@@ -222,9 +197,7 @@ func (av *AWSVolume) GetActualTags() ([]*Tag, error) {
 }
 
 func (av *AWSVolume) getAWSEC2Client() (*ec2.EC2, error) {
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(av.awsConfig.Region)},
-	)
+	sess, err := getAWSSession(av.awsConfig)
 	if err != nil {
 		return nil, err
 	}
