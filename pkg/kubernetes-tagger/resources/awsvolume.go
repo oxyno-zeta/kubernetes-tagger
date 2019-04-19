@@ -20,7 +20,7 @@ type AWSVolume struct {
 	resourcePlatform string
 	awsConfig        *config.AWSConfig
 	persistentVolume *v1.PersistentVolume
-	k8sClient        *kubernetes.Clientset
+	k8sClient        kubernetes.Interface
 	volumeID         string
 	log              *logrus.Entry
 }
@@ -36,7 +36,7 @@ func (av *AWSVolume) Platform() string {
 }
 
 // newAWSVolume Generate a new AWS Volume
-func newAWSVolume(k8sClient *kubernetes.Clientset, pv *v1.PersistentVolume, config *config.Configuration) (*AWSVolume, error) {
+func newAWSVolume(k8sClient kubernetes.Interface, pv *v1.PersistentVolume, config *config.Configuration) (*AWSVolume, error) {
 	url, err := url.Parse(pv.Spec.AWSElasticBlockStore.VolumeID)
 	if err != nil {
 		return nil, fmt.Errorf("Cannot parse persistent volume AWS Volume Id: %v", err)

@@ -28,7 +28,7 @@ type Resource interface {
 }
 
 // NewFromPersistentVolume New resource instance from persistent volume
-func NewFromPersistentVolume(k8sClient *kubernetes.Clientset, pv *v1.PersistentVolume, cfg *config.Configuration) (Resource, error) {
+func NewFromPersistentVolume(k8sClient kubernetes.Interface, pv *v1.PersistentVolume, cfg *config.Configuration) (Resource, error) {
 	// Check if AWS provider is enabled and if it is an aws volume resource
 	if cfg.Provider == config.AWSProviderName && isAWSVolumeResource(pv) {
 		res, err := newAWSVolume(k8sClient, pv, cfg)
@@ -41,7 +41,7 @@ func NewFromPersistentVolume(k8sClient *kubernetes.Clientset, pv *v1.PersistentV
 }
 
 // NewFromService New resource instance from service
-func NewFromService(k8sClient *kubernetes.Clientset, svc *v1.Service, cfg *config.Configuration) (Resource, error) {
+func NewFromService(k8sClient kubernetes.Interface, svc *v1.Service, cfg *config.Configuration) (Resource, error) {
 	// Check if AWS provider is enabled and if it is an aws volume resource
 	if cfg.Provider == config.AWSProviderName && isAWSLoadBalancerResource(svc) {
 		res, err := newAWSLoadBalancer(k8sClient, svc, cfg)

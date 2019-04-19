@@ -31,7 +31,7 @@ type AWSLoadBalancer struct {
 	resourcePlatform string
 	awsConfig        *config.AWSConfig
 	service          *v1.Service
-	k8sClient        *kubernetes.Clientset
+	k8sClient        kubernetes.Interface
 	volumeID         string
 	log              *logrus.Entry
 }
@@ -47,7 +47,7 @@ func (al *AWSLoadBalancer) Platform() string {
 }
 
 // newAWSLoadBalancer Generate a new AWS Load Balancer
-func newAWSLoadBalancer(k8sClient *kubernetes.Clientset, svc *v1.Service, config *config.Configuration) (*AWSLoadBalancer, error) {
+func newAWSLoadBalancer(k8sClient kubernetes.Interface, svc *v1.Service, config *config.Configuration) (*AWSLoadBalancer, error) {
 	// Create logger
 	log := logrus.WithFields(logrus.Fields{
 		"type":        LoadBalancerResourceType,
