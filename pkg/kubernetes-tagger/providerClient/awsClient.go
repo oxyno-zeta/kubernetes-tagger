@@ -15,7 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/config"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 )
 
 // ServiceAnnotationLoadBalancerType is the annotation used on the service
@@ -30,6 +30,7 @@ var ErrLoadBalancerNotFound = errors.New("load balancer not found")
 // ErrNoTagsFound No tags found error
 var ErrNoTagsFound = errors.New("no tags found on load balancer")
 
+// AWSProviderClient Aws Provider client
 type AWSProviderClient struct {
 	awsConfig   *config.AWSConfig
 	ec2client   *ec2.EC2
@@ -92,6 +93,7 @@ func transformTagsToAwsEC2Tags(tagsList []*tags.Tag) []*ec2.Tag {
 	return awsEc2Tags
 }
 
+// GetActualTagsFromPersistentVolume Get actual tags from persistent volume
 func (apr *AWSProviderClient) GetActualTagsFromPersistentVolume(pv *v1.PersistentVolume) ([]*tags.Tag, error) {
 	// Get volume ID from pv
 	volumeID, err := getVolumeIDFromPersistentVolume(pv)
@@ -127,6 +129,7 @@ func (apr *AWSProviderClient) GetActualTagsFromPersistentVolume(pv *v1.Persisten
 	return result, nil
 }
 
+// GetActualTagsFromService Get actual tags from service
 func (apr *AWSProviderClient) GetActualTagsFromService(svc *v1.Service) ([]*tags.Tag, error) {
 	// Check if it is a network loadbalancer (elbv2) or classic load balancer (elb)
 	if svc.Annotations != nil && svc.Annotations[ServiceAnnotationLoadBalancerType] == "nlb" {
@@ -225,6 +228,7 @@ func (apr *AWSProviderClient) getActualTagsFromELB(svc *v1.Service) ([]*tags.Tag
 	return result, nil
 }
 
+// AddTagsFromPersistentVolume Add Tags from persistent volume
 func (apr *AWSProviderClient) AddTagsFromPersistentVolume(pv *v1.PersistentVolume, tagsList []*tags.Tag) error {
 	// Get volume ID from pv
 	volumeID, err := getVolumeIDFromPersistentVolume(pv)
@@ -245,6 +249,7 @@ func (apr *AWSProviderClient) AddTagsFromPersistentVolume(pv *v1.PersistentVolum
 	return nil
 }
 
+// DeleteTagsFromPersistentVolume Delete tags from persistent volume
 func (apr *AWSProviderClient) DeleteTagsFromPersistentVolume(pv *v1.PersistentVolume, tagsList []*tags.Tag) error {
 	// Get volume ID from pv
 	volumeID, err := getVolumeIDFromPersistentVolume(pv)
@@ -265,6 +270,7 @@ func (apr *AWSProviderClient) DeleteTagsFromPersistentVolume(pv *v1.PersistentVo
 	return nil
 }
 
+// AddTagsFromService Add tags from service
 func (apr *AWSProviderClient) AddTagsFromService(svc *v1.Service, tagsList []*tags.Tag) error {
 	// Check if it is a network loadbalancer (elbv2) or classic load balancer (elb)
 	if svc.Annotations != nil && svc.Annotations[ServiceAnnotationLoadBalancerType] == "nlb" {
@@ -320,6 +326,7 @@ func (apr *AWSProviderClient) addTagsToELB(svc *v1.Service, tagsList []*tags.Tag
 	return err
 }
 
+// DeleteTagsFromService Delete tags from service
 func (apr *AWSProviderClient) DeleteTagsFromService(svc *v1.Service, tagsList []*tags.Tag) error {
 	// Check if it is a network loadbalancer (elbv2) or classic load balancer (elb)
 	if svc.Annotations != nil && svc.Annotations[ServiceAnnotationLoadBalancerType] == "nlb" {

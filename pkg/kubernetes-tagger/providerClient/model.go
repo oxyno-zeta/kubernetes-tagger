@@ -3,7 +3,7 @@ package providerclient
 import (
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/config"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/tags"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 )
 
 // ProviderClient Provider Client
@@ -16,6 +16,7 @@ type ProviderClient interface {
 	DeleteTagsFromService(svc *v1.Service, tagsList []*tags.Tag) error
 }
 
+// NewProviderClient New Provider client
 func NewProviderClient(cfg *config.Configuration) (ProviderClient, error) {
 	return newAWSProviderClient(cfg.AWS)
 }
