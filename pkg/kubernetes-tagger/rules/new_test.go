@@ -19,12 +19,26 @@ func TestNew(t *testing.T) {
 	}{
 		{"NilList", args{ruleConfigs: nil}, []*Rule{}, false},
 		{"EmptyList", args{ruleConfigs: []*config.RuleConfig{}}, []*Rule{}, false},
-		// {
-		// 	"List",
-		// 	args{[]*config.RuleConfig{{Action: "add", Tag: "tag", Value: "test"}}},
-		// 	[]*Rule{{Action: RuleActionAdd}},
-		// 	false,
-		// },
+		{
+			"List",
+			args{[]*config.RuleConfig{
+				&config.RuleConfig{
+					Action: "add",
+					Tag:    "test-tag",
+					Query:  "query",
+					When:   []*config.ConditionConfig{},
+				},
+			}},
+			[]*Rule{
+				&Rule{
+					Action: RuleActionAdd,
+					Tag:    "test-tag",
+					Query:  "query",
+					When:   []*Condition{},
+				},
+			},
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -188,6 +202,35 @@ func Test_newFromRuleConfig(t *testing.T) {
 			nil,
 			true,
 			ErrRuleConditionOperatorNotSupported,
+		},
+		{
+			"rule is valid with when condition",
+			args{ruleConfig: &config.RuleConfig{
+				Action: "add",
+				Tag:    "test-tag",
+				Query:  "query",
+				When: []*config.ConditionConfig{
+					&config.ConditionConfig{
+						Condition: "condition",
+						Operator:  "Equal",
+						Value:     "",
+					},
+				},
+			}},
+			&Rule{
+				Action: RuleActionAdd,
+				Tag:    "test-tag",
+				Query:  "query",
+				When: []*Condition{
+					&Condition{
+						Operator:  ConditionOperatorEqual,
+						Condition: "condition",
+						Value:     "",
+					},
+				},
+			},
+			false,
+			nil,
 		},
 	}
 	for _, tt := range tests {
