@@ -58,7 +58,10 @@ func newAWSLoadBalancer(k8sClient kubernetes.Interface, svc *v1.Service, config 
 
 // isAWSLoadBalancerResource returns a boolean to know if a service is an AWS Load Balancer
 func isAWSLoadBalancerResource(svc *v1.Service) bool {
-	// The only thing that can be tested here is the service type
+	if svc == nil {
+		return false
+	}
+	// Check that svc is a load balancer
 	if svc.Spec.Type != v1.ServiceTypeLoadBalancer {
 		return false
 	}
@@ -70,7 +73,7 @@ func isAWSLoadBalancerResource(svc *v1.Service) bool {
 	if ing.Hostname == "" {
 		return false
 	}
-	return strings.Contains(ing.Hostname, "amazonaws.com")
+	return strings.HasSuffix(ing.Hostname, "amazonaws.com")
 }
 
 // GetAvailableTagValues Get available tag values
