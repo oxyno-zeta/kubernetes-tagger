@@ -60,6 +60,58 @@ func TestCalculateTags(t *testing.T) {
 			nil,
 		},
 		{
+			"tag not present for delete rule",
+			args{
+				actualTags: []*tags.Tag{},
+				availableTagValues: map[string]interface{}{
+					"key1": "value1",
+				},
+				rules: []*Rule{
+					&Rule{
+						Action: RuleActionDelete,
+						Tag:    "tag-test",
+					},
+				},
+			},
+			&tags.TagDelta{
+				AddList:    []*tags.Tag{},
+				DeleteList: []*tags.Tag{},
+			},
+			false,
+			nil,
+		},
+		{
+			"tag present for delete rule",
+			args{
+				actualTags: []*tags.Tag{
+					&tags.Tag{
+						Key:   "tag-test",
+						Value: "value-test",
+					},
+				},
+				availableTagValues: map[string]interface{}{
+					"key1": "value1",
+				},
+				rules: []*Rule{
+					&Rule{
+						Action: RuleActionDelete,
+						Tag:    "tag-test",
+					},
+				},
+			},
+			&tags.TagDelta{
+				AddList: []*tags.Tag{},
+				DeleteList: []*tags.Tag{
+					&tags.Tag{
+						Key:   "tag-test",
+						Value: "value-test",
+					},
+				},
+			},
+			false,
+			nil,
+		},
+		{
 			"No query result in add rule",
 			args{
 				actualTags: []*tags.Tag{},
@@ -109,7 +161,7 @@ func TestCalculateTags(t *testing.T) {
 			nil,
 		},
 		{
-			"tag not present for delete rule",
+			"direct value in add rule",
 			args{
 				actualTags: []*tags.Tag{},
 				availableTagValues: map[string]interface{}{
@@ -117,20 +169,26 @@ func TestCalculateTags(t *testing.T) {
 				},
 				rules: []*Rule{
 					&Rule{
-						Action: RuleActionDelete,
+						Action: RuleActionAdd,
+						Value:  "value-test",
 						Tag:    "tag-test",
 					},
 				},
 			},
 			&tags.TagDelta{
-				AddList:    []*tags.Tag{},
+				AddList: []*tags.Tag{
+					&tags.Tag{
+						Key:   "tag-test",
+						Value: "value-test",
+					},
+				},
 				DeleteList: []*tags.Tag{},
 			},
 			false,
 			nil,
 		},
 		{
-			"tag present for delete rule",
+			"skip add tag when tag and value already exists for add rule",
 			args{
 				actualTags: []*tags.Tag{
 					&tags.Tag{
@@ -143,19 +201,149 @@ func TestCalculateTags(t *testing.T) {
 				},
 				rules: []*Rule{
 					&Rule{
-						Action: RuleActionDelete,
+						Action: RuleActionAdd,
+						Value:  "value-test",
 						Tag:    "tag-test",
 					},
 				},
 			},
 			&tags.TagDelta{
-				AddList: []*tags.Tag{},
-				DeleteList: []*tags.Tag{
+				AddList:    []*tags.Tag{},
+				DeleteList: []*tags.Tag{},
+			},
+			false,
+			nil,
+		},
+		{
+			"tag value must be updated when value is different for add rule",
+			args{
+				actualTags: []*tags.Tag{
+					&tags.Tag{
+						Key:   "tag-test",
+						Value: "wrong-value",
+					},
+				},
+				availableTagValues: map[string]interface{}{
+					"key1": "value1",
+				},
+				rules: []*Rule{
+					&Rule{
+						Action: RuleActionAdd,
+						Value:  "value-test",
+						Tag:    "tag-test",
+					},
+				},
+			},
+			&tags.TagDelta{
+				AddList: []*tags.Tag{
 					&tags.Tag{
 						Key:   "tag-test",
 						Value: "value-test",
 					},
 				},
+				DeleteList: []*tags.Tag{},
+			},
+			false,
+			nil,
+		},
+		{
+			"rule should be ignored if conditions are not valid because tag should be equal",
+			args{
+				actualTags: []*tags.Tag{
+					&tags.Tag{
+						Key:   "tag-test",
+						Value: "wrong-value",
+					},
+				},
+				availableTagValues: map[string]interface{}{
+					"key1": "value1",
+				},
+				rules: []*Rule{
+					&Rule{
+						Action: RuleActionAdd,
+						Value:  "value-test",
+						Tag:    "tag-test",
+						When: []*Condition{
+							&Condition{
+								Condition: "key1",
+								Operator:  ConditionOperatorEqual,
+								Value:     "Value-not-valid",
+							},
+						},
+					},
+				},
+			},
+			&tags.TagDelta{
+				AddList:    []*tags.Tag{},
+				DeleteList: []*tags.Tag{},
+			},
+			false,
+			nil,
+		},
+		{
+			"rule should be ignored if conditions are not valid because tag is not present",
+			args{
+				actualTags: []*tags.Tag{
+					&tags.Tag{
+						Key:   "tag-test",
+						Value: "wrong-value",
+					},
+				},
+				availableTagValues: map[string]interface{}{
+					"key1": "value1",
+				},
+				rules: []*Rule{
+					&Rule{
+						Action: RuleActionAdd,
+						Value:  "value-test",
+						Tag:    "tag-test",
+						When: []*Condition{
+							&Condition{
+								Condition: "key",
+								Operator:  ConditionOperatorEqual,
+								Value:     "Value-not-valid",
+							},
+						},
+					},
+				},
+			},
+			&tags.TagDelta{
+				AddList:    []*tags.Tag{},
+				DeleteList: []*tags.Tag{},
+			},
+			false,
+			nil,
+		},
+		{
+			"rule should be ignored if conditions are not valid because tag should not be equal",
+			args{
+				actualTags: []*tags.Tag{
+					&tags.Tag{
+						Key:   "tag-test",
+						Value: "wrong-value",
+					},
+				},
+				availableTagValues: map[string]interface{}{
+					"key1": "value1",
+				},
+				rules: []*Rule{
+					&Rule{
+						Action: RuleActionAdd,
+						Value:  "value-test",
+						Tag:    "tag-test",
+						When: []*Condition{
+							&Condition{
+								Condition: "key1",
+								Operator:  ConditionOperatorNotEqual,
+								Value:     "value1",
+							},
+						},
+					},
+				},
+			},
+			&tags.TagDelta{
+				AddList:    []*tags.Tag{},
+				DeleteList: []*tags.Tag{},
 			},
 			false,
 			nil,
