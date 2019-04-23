@@ -64,3 +64,76 @@ func Test_getAWSLoadBalancerName(t *testing.T) {
 		})
 	}
 }
+
+func Test_getVolumeIDFromPersistentVolume(t *testing.T) {
+	type args struct {
+		pv *v1.PersistentVolume
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{
+			"AWS EBS Spec with availability zone in",
+			args{
+				pv: &v1.PersistentVolume{
+					Spec: v1.PersistentVolumeSpec{
+						PersistentVolumeSource: v1.PersistentVolumeSource{
+							AWSElasticBlockStore: &v1.AWSElasticBlockStoreVolumeSource{
+								VolumeID: "aws://eu-west-1a/vol-test12131213",
+							},
+						},
+					},
+				},
+			},
+			"vol-test12131213",
+			false,
+		},
+		{
+			"AWS EBS Spec without availability zone in",
+			args{
+				pv: &v1.PersistentVolume{
+					Spec: v1.PersistentVolumeSpec{
+						PersistentVolumeSource: v1.PersistentVolumeSource{
+							AWSElasticBlockStore: &v1.AWSElasticBlockStoreVolumeSource{
+								VolumeID: "aws:///vol-test12131213",
+							},
+						},
+					},
+				},
+			},
+			"vol-test12131213",
+			false,
+		},
+		{
+			"AWS EBS Spec with a / at the end",
+			args{
+				pv: &v1.PersistentVolume{
+					Spec: v1.PersistentVolumeSpec{
+						PersistentVolumeSource: v1.PersistentVolumeSource{
+							AWSElasticBlockStore: &v1.AWSElasticBlockStoreVolumeSource{
+								VolumeID: "aws:///vol-test12131213/",
+							},
+						},
+					},
+				},
+			},
+			"vol-test12131213",
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := getVolumeIDFromPersistentVolume(tt.args.pv)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getVolumeIDFromPersistentVolume() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("getVolumeIDFromPersistentVolume() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
