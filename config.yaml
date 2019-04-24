@@ -8,7 +8,7 @@
 # address: :8085
 
 # Log level
-# loglevel: info
+loglevel: debug
 
 # Log format
 # logformat: json
@@ -19,13 +19,21 @@ provider: aws
 # AWS configuration
 aws:
   # Region
-  region: eu-central-1
+  region: eu-west-3
 
 # Rules to add / delete tags
 rules:
   # Rule definition add value hardcoded
   - tag: tag-hardcoded
-    value: hardcoded-value
+    action: delete
+  - tag: namespace
+    query: service.namespace
+    action: add
+  - tag: name
+    query: service.name
+    action: add
+  - tag: chart
+    query: service.labels.chart
     action: add
   # Rule definition add value from query
   - tag: tag-query
