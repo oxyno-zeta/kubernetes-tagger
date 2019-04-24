@@ -1,14 +1,11 @@
 package resources
 
 import (
-	"fmt"
-	"net/url"
-	"strings"
+	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/providerClient"
+	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/tags"
 
 	"github.com/Sirupsen/logrus"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/config"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
@@ -20,9 +17,9 @@ type AWSVolume struct {
 	resourcePlatform string
 	awsConfig        *config.AWSConfig
 	persistentVolume *v1.PersistentVolume
-	k8sClient        *kubernetes.Clientset
-	volumeID         string
+	k8sClient        kubernetes.Interface
 	log              *logrus.Entry
+	prcl             *providerclient.AWSProviderClient
 }
 
 // Type Get type
@@ -36,14 +33,7 @@ func (av *AWSVolume) Platform() string {
 }
 
 // newAWSVolume Generate a new AWS Volume
-func newAWSVolume(k8sClient *kubernetes.Clientset, pv *v1.PersistentVolume, config *config.Configuration) (*AWSVolume, error) {
-	url, err := url.Parse(pv.Spec.AWSElasticBlockStore.VolumeID)
-	if err != nil {
-		return nil, fmt.Errorf("Cannot parse persistent volume AWS Volume Id: %v", err)
-	}
-	volumeID := url.Path
-	volumeID = strings.Trim(volumeID, "/")
-
+func newAWSVolume(k8sClient kubernetes.Interface, pv *v1.PersistentVolume, config *config.Configuration, prcl providerclient.ProviderClient) (*AWSVolume, error) {
 	// Create logger
 	log := logrus.WithFields(logrus.Fields{
 		"type":                 VolumeResourceType,
@@ -58,8 +48,8 @@ func newAWSVolume(k8sClient *kubernetes.Clientset, pv *v1.PersistentVolume, conf
 		awsConfig:        awsConfig,
 		persistentVolume: pv,
 		k8sClient:        k8sClient,
-		volumeID:         volumeID,
 		log:              log,
+		prcl:             prcl.(*providerclient.AWSProviderClient),
 	}
 	return &instance, nil
 }
@@ -103,33 +93,24 @@ func (av *AWSVolume) GetAvailableTagValues() (map[string]interface{}, error) {
 	return availableTags, nil
 }
 
+// GetActualTags Get actual tags.
+func (av *AWSVolume) GetActualTags() ([]*tags.Tag, error) {
+	av.log.Info("Get actual tags on resource")
+	return av.prcl.GetActualTagsFromPersistentVolume(av.persistentVolume)
+}
+
 // ManageTags Manage tags on resource
-func (av *AWSVolume) ManageTags(delta *TagDelta) error {
+func (av *AWSVolume) ManageTags(delta *tags.TagDelta) error {
 	// TODO Need to check AWS Limits before sending
 	av.log.WithField("delta", delta).Debug("Manage tags on resource")
 	av.log.Info("Manage tags on resource")
-	// Get EC2 AWS Client
-	svc, err := av.getAWSEC2Client()
-	if err != nil {
-		return err
-	}
 
 	// Add case
 
 	// Check if tags needs to be added
 	if len(delta.AddList) > 0 {
 		av.log.WithField("delta", delta).Debug("Add list detected. Begin request to AWS.")
-		awsAddTags := make([]*ec2.Tag, 0)
-		for i := 0; i < len(delta.AddList); i++ {
-			tag := delta.AddList[i]
-			awsAddTags = append(awsAddTags, &ec2.Tag{Key: aws.String(tag.Key), Value: aws.String(tag.Value)})
-		}
-
-		// Add tags to the created instance
-		_, err = svc.CreateTags(&ec2.CreateTagsInput{
-			Resources: []*string{aws.String(av.volumeID)},
-			Tags:      awsAddTags,
-		})
+		err := av.prcl.AddTagsFromPersistentVolume(av.persistentVolume, delta.AddList)
 		if err != nil {
 			return err
 		}
@@ -141,17 +122,7 @@ func (av *AWSVolume) ManageTags(delta *TagDelta) error {
 	// Check if tags needs to be removed
 	if len(delta.DeleteList) > 0 {
 		av.log.WithField("delta", delta).Debug("Delete list detected. Begin request to AWS.")
-		awsDeleteTags := make([]*ec2.Tag, 0)
-		for i := 0; i < len(delta.DeleteList); i++ {
-			tag := delta.DeleteList[i]
-			awsDeleteTags = append(awsDeleteTags, &ec2.Tag{Key: aws.String(tag.Key), Value: aws.String(tag.Value)})
-		}
-
-		// Delete tags to the created instance
-		_, err = svc.DeleteTags(&ec2.DeleteTagsInput{
-			Resources: []*string{aws.String(av.volumeID)},
-			Tags:      awsDeleteTags,
-		})
+		err := av.prcl.DeleteTagsFromPersistentVolume(av.persistentVolume, delta.DeleteList)
 		if err != nil {
 			return err
 		}
@@ -159,49 +130,4 @@ func (av *AWSVolume) ManageTags(delta *TagDelta) error {
 	}
 
 	return nil
-}
-
-// GetActualTags Get actual tags.
-func (av *AWSVolume) GetActualTags() ([]*Tag, error) {
-	av.log.Info("Get actual tags on resource")
-	// Get EC2 AWS Client
-	svc, err := av.getAWSEC2Client()
-	if err != nil {
-		return nil, err
-	}
-
-	volumesIDs := make([]*string, 0)
-	volumesIDs = append(volumesIDs, aws.String(av.volumeID))
-	output, err := svc.DescribeVolumes(&ec2.DescribeVolumesInput{
-		VolumeIds: volumesIDs,
-	})
-	if err != nil {
-		return nil, err
-	}
-	volumes := output.Volumes
-	if len(volumes) != 1 {
-		return nil, fmt.Errorf("Can't find volume in AWS from volume id \"%s\"", av.volumeID)
-	}
-	volume := volumes[0]
-
-	result := make([]*Tag, 0)
-	if volume.Tags == nil {
-		return result, nil
-	}
-
-	for i := 0; i < len(volume.Tags); i++ {
-		awsTag := volume.Tags[i]
-		result = append(result, &Tag{Key: *awsTag.Key, Value: *awsTag.Value})
-	}
-	return result, nil
-}
-
-func (av *AWSVolume) getAWSEC2Client() (*ec2.EC2, error) {
-	sess, err := getAWSSession(av.awsConfig)
-	if err != nil {
-		return nil, err
-	}
-	// Create EC2 service client
-	svc := ec2.New(sess)
-	return svc, nil
 }

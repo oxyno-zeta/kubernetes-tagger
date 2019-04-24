@@ -15,9 +15,22 @@ var ErrRuleConditionOperatorNotSupported = errors.New("condition operator not su
 // ErrRuleActionNotSupported Rule action not supported.
 var ErrRuleActionNotSupported = errors.New("rule action not supported")
 
+// ErrRuleEmptyTag Err Rule Empty Tag
+var ErrRuleEmptyTag = errors.New("tag rule mustn't be empty")
+
+// ErrRuleQueryAndValueEmptyForAddCase Err Rule Query and Value empty for Add case
+var ErrRuleQueryAndValueEmptyForAddCase = errors.New("query and value mustn't be empty for add case")
+
+// ErrRuleQueryAndValuePopulatedForAddCase Err Rule query and value populated for Add case
+var ErrRuleQueryAndValuePopulatedForAddCase = errors.New("query and value cannot be populated at the same time in add case")
+
 // New Create rules array from ruleConfig with validation
 func New(ruleConfigs []*config.RuleConfig) ([]*Rule, error) {
 	rules := make([]*Rule, 0)
+	if ruleConfigs == nil {
+		return rules, nil
+	}
+
 	for i := 0; i < len(ruleConfigs); i++ {
 		ruleConfig := ruleConfigs[i]
 		rule, err := newFromRuleConfig(ruleConfig)
@@ -30,6 +43,40 @@ func New(ruleConfigs []*config.RuleConfig) ([]*Rule, error) {
 }
 
 func newFromRuleConfig(ruleConfig *config.RuleConfig) (*Rule, error) {
+	if ruleConfig == nil {
+		return nil, nil
+	}
+
+	// Create rule
+	rule := &Rule{
+		Tag:   ruleConfig.Tag,
+		Query: ruleConfig.Query,
+		Value: ruleConfig.Value,
+	}
+	switch ruleConfig.Action {
+	case string(RuleActionAdd):
+		rule.Action = RuleActionAdd
+	case string(RuleActionDelete):
+		rule.Action = RuleActionDelete
+	default:
+		return nil, ErrRuleActionNotSupported
+	}
+	// Check if rule is valid
+	if rule.Tag == "" {
+		return nil, ErrRuleEmptyTag
+	}
+
+	// Check add case
+	if rule.Action == RuleActionAdd && rule.Query == "" && rule.Value == "" {
+		return nil, ErrRuleQueryAndValueEmptyForAddCase
+	}
+
+	// Check that in add case we haven't query and value at the same time
+	if rule.Action == RuleActionAdd && rule.Query != "" && rule.Value != "" {
+		return nil, ErrRuleQueryAndValuePopulatedForAddCase
+	}
+
+	// Manage conditions
 	conditions := make([]*Condition, 0)
 	for i := 0; i < len(ruleConfig.When); i++ {
 		conditionConfig := ruleConfig.When[i]
@@ -52,19 +99,6 @@ func newFromRuleConfig(ruleConfig *config.RuleConfig) (*Rule, error) {
 		}
 		conditions = append(conditions, condition)
 	}
-	rule := &Rule{
-		Tag:   ruleConfig.Tag,
-		Query: ruleConfig.Query,
-		Value: ruleConfig.Value,
-		When:  conditions,
-	}
-	switch ruleConfig.Action {
-	case string(RuleActionAdd):
-		rule.Action = RuleActionAdd
-	case string(RuleActionDelete):
-		rule.Action = RuleActionDelete
-	default:
-		return nil, ErrRuleActionNotSupported
-	}
+	rule.When = conditions
 	return rule, nil
 }
