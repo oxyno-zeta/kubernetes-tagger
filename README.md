@@ -16,6 +16,12 @@ When they can be processed, it will test if rules can be applied with actual tag
 
 Once, this is done, kubernetes-tagger will apply the delta on the target provider.
 
+## How to deploy it ?
+
+For that, we have created a Helm Chart which is located in the "helm-chart" folder in this repository.
+
+Just have a look on the [README](helm-chart/kubernetes-tagger/README.md) in the chart.
+
 ## Documentation
 
 - [Configuration](docs/configuration.md)
