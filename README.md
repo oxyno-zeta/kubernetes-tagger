@@ -26,6 +26,7 @@ Just have a look on the [README](helm-chart/kubernetes-tagger/README.md) in the 
 
 - [Configuration](docs/configuration.md)
 - [Data Structure](docs/data-structure.md)
+- [AWS Cloud](docs/aws-cloud.md)
 
 ## Contributing
 
