@@ -1,6 +1,8 @@
 package business
 
 import (
+	"time"
+
 	"k8s.io/apimachinery/pkg/util/wait"
 	kubeinformers "k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
@@ -9,7 +11,7 @@ import (
 // Watch Watch Kubernetes
 func Watch(context *Context) {
 	informerFactory := kubeinformers.NewSharedInformerFactoryWithOptions(context.KubernetesClient,
-		0, kubeinformers.WithNamespace(""))
+		time.Minute, kubeinformers.WithNamespace(""))
 
 	persistentVolumeInformer := informerFactory.Core().V1().PersistentVolumes()
 	serviceInformer := informerFactory.Core().V1().Services()
