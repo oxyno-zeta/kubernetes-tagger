@@ -4,7 +4,7 @@
 
 ## Context
 
-Kubernetes tagger offer the possibility to add tags on external services like EBS on AWS.
+Kubernetes tagger offer the possibility to add tags on external services like EBS and Load balancer on AWS.
 
 Why creating this project ? Because Kubernetes doesn't offer this feature for the moment.
 
@@ -15,6 +15,8 @@ For persistent volume, Kubernetes-tagger will watch for new persistent volumes a
 When they can be processed, it will test if rules can be applied with actual tags present and Kubernetes data.
 
 Once, this is done, kubernetes-tagger will apply the delta on the target provider.
+
+The process is the same for services to allow tag on service with type `LoadBalancer`.
 
 ## How to deploy it ?
 
