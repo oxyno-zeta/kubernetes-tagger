@@ -76,9 +76,14 @@ func getAWSLoadBalancerName(svc *v1.Service) string {
 	// Split hostname on . and after split the first part on -
 	splitHostname := strings.Split(svc.Status.LoadBalancer.Ingress[0].Hostname, ".")
 	splitSubDomain := strings.Split(splitHostname[0], "-")
-	name := splitSubDomain[0]
+	fromSplit := 0
+	if strings.Contains(svc.Status.LoadBalancer.Ingress[0].Hostname, "internal") {
+		// ex: internal-acc1b0155441645c6902a362c6821a9e-138903596.eu-west-1.elb.amazonaws.com
+		fromSplit = 1
+	}
+	name := splitSubDomain[fromSplit]
 	// Don't take the last one
-	for i := 1; i < len(splitSubDomain)-1; i++ {
+	for i := fromSplit+1; i < len(splitSubDomain)-1; i++ {
 		name = name + "-" + splitSubDomain[i]
 	}
 	return name
