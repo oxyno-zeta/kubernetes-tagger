@@ -36,6 +36,26 @@ func Test_getAWSLoadBalancerName(t *testing.T) {
 			"aa59f0ca83",
 		},
 		{
+			"test with one dash in the name and internal prefix",
+			args{
+				svc: &v1.Service{
+					Spec: v1.ServiceSpec{
+						Type: v1.ServiceTypeLoadBalancer,
+					},
+					Status: v1.ServiceStatus{
+						LoadBalancer: v1.LoadBalancerStatus{
+							Ingress: []v1.LoadBalancerIngress{
+								v1.LoadBalancerIngress{
+									Hostname: "internal-aa59f0ca83-7455.eu-west-1.elb.amazonaws.com",
+								},
+							},
+						},
+					},
+				},
+			},
+			"aa59f0ca83",
+		},
+		{
 			"test with two dash in the name",
 			args{
 				svc: &v1.Service{
@@ -47,6 +67,26 @@ func Test_getAWSLoadBalancerName(t *testing.T) {
 							Ingress: []v1.LoadBalancerIngress{
 								v1.LoadBalancerIngress{
 									Hostname: "aa59f0-ca83-7455.eu-west-1.elb.amazonaws.com",
+								},
+							},
+						},
+					},
+				},
+			},
+			"aa59f0-ca83",
+		},
+		{
+			"test with two dash in the name and internal prefix",
+			args{
+				svc: &v1.Service{
+					Spec: v1.ServiceSpec{
+						Type: v1.ServiceTypeLoadBalancer,
+					},
+					Status: v1.ServiceStatus{
+						LoadBalancer: v1.LoadBalancerStatus{
+							Ingress: []v1.LoadBalancerIngress{
+								v1.LoadBalancerIngress{
+									Hostname: "internal-aa59f0-ca83-7455.eu-west-1.elb.amazonaws.com",
 								},
 							},
 						},
