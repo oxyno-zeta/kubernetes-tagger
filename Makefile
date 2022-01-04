@@ -2,7 +2,6 @@
 TARGETS           ?= linux/amd64
 PROJECT_NAME	  := kubernetes-tagger
 PKG				  := github.com/oxyno-zeta/$(PROJECT_NAME)
-PKG_LIST		  := $(shell go list ${PKG}/... | grep -v /vendor/)
 
 # go option
 GO        ?= go
@@ -45,7 +44,7 @@ all: lint test build
 
 .PHONY: lint
 lint: dep
-	golint -set_exit_status ${PKG_LIST}
+	golint -set_exit_status ./...
 
 .PHONY: build
 build: clean dep
@@ -74,11 +73,12 @@ docker-publish-latest:
 	docker push oxynozeta/kubernetes-tagger:latest
 
 test: dep ## Run unittests
-	$(GO) test -short -cover -coverprofile=c.out ${PKG_LIST}
+	$(GO) test -short -cover -coverprofile=c.out ./...
 
 .PHONY: coverage-report
 coverage-report:
-	$(GO) tool cover -html=c.out -o coverage.html 
+	$(GO) tool cover -html=c.out -o coverage.html
+	$(GO) tool cover -func c.out
 
 .PHONY: clean
 clean:
