@@ -46,14 +46,14 @@ func Test_getAWSLoadBalancerName(t *testing.T) {
 						LoadBalancer: v1.LoadBalancerStatus{
 							Ingress: []v1.LoadBalancerIngress{
 								v1.LoadBalancerIngress{
-									Hostname: "internal-aa59f0ca83-7455.eu-west-1.elb.amazonaws.com",
+									Hostname: "internal-a4dd37e88031f4686ace94930e6b1e00-359923540.eu-west-1.elb.amazonaws.com",
 								},
 							},
 						},
 					},
 				},
 			},
-			"aa59f0ca83",
+			"a4dd37e88031f4686ace94930e6b1e00",
 		},
 		{
 			"test with two dash in the name",

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/tags"
 	"github.com/thoas/go-funk"

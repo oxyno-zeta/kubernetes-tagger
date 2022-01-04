@@ -1,10 +1,10 @@
 package business
 
 import (
-	"github.com/Sirupsen/logrus"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/config"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/resources"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/rules"
+	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 )

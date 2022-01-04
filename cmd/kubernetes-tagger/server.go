@@ -3,9 +3,9 @@ package main
 import (
 	"net/http"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/dimiro1/health"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
 )
 
 func serve() {

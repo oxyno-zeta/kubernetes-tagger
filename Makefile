@@ -91,7 +91,6 @@ clean:
 HAS_GIT := $(shell command -v git;)
 HAS_GOX := $(shell command -v gox;)
 HAS_GOLINT := $(shell command -v golint;)
-HAS_GODEP := $(shell command -v dep;)
 
 .PHONY: dep
 dep:
@@ -104,7 +103,4 @@ endif
 ifndef HAS_GIT
 	$(error You must install Git)
 endif
-ifndef HAS_GODEP
-	go get -u github.com/golang/dep/cmd/dep
-endif
-	dep ensure
+	$(GO) mod download

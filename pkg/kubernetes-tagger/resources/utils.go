@@ -1,6 +1,8 @@
 package resources
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/config"
@@ -25,7 +27,7 @@ func getPersistentVolumeClaim(persistentVolume *v1.PersistentVolume, k8sClient k
 		return nil, nil
 	}
 
-	pvc, err := k8sClient.CoreV1().PersistentVolumeClaims(claimRef.Namespace).Get(claimRef.Name, metav1.GetOptions{})
+	pvc, err := k8sClient.CoreV1().PersistentVolumeClaims(claimRef.Namespace).Get(context.TODO(), claimRef.Name, metav1.GetOptions{})
 	if err != nil && !k8serrors.IsNotFound(err) {
 		return nil, err
 	}

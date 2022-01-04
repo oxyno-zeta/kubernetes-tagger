@@ -4,7 +4,7 @@ import (
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/providerClient"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/tags"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/config"
 	v1 "k8s.io/api/core/v1"
