@@ -11,18 +11,20 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-// ErrCannotStringifyAvailableTagValues Cannot stringify available tag values
+// ErrCannotStringifyAvailableTagValues Cannot stringify available tag values.
 var ErrCannotStringifyAvailableTagValues = errors.New("error cannot transform to string available tag values")
 
-// CalculateTags Calculate tags delta to add/update or delete tags on resource
+// CalculateTags Calculate tags delta to add/update or delete tags on resource.
 func CalculateTags(actualTags []*tags.Tag, availableTagValues map[string]interface{}, rules []*Rule) (*tags.TagDelta, error) {
 	logrus.Debug("Begin calculate tags from available values and rules")
 	// Create GJSON result to filter tags
 	jsonBytes, err := json.Marshal(availableTagValues)
 	if err != nil {
 		logrus.Debugf("Error: cannot stringify available tag values: %v", err)
+
 		return nil, ErrCannotStringifyAvailableTagValues
 	}
+
 	jsonString := string(jsonBytes)
 	gjsonResult := gjson.Parse(jsonString)
 
@@ -31,9 +33,8 @@ func CalculateTags(actualTags []*tags.Tag, availableTagValues map[string]interfa
 	// Manage rules
 	addList := make([]*tags.Tag, 0)
 	deleteList := make([]*tags.Tag, 0)
-	for i := 0; i < len(rules); i++ {
-		rule := rules[i]
 
+	for _, rule := range rules {
 		// Eval conditions
 		whenResult := evalConditions(rule.When, gjsonResult)
 		if !whenResult {
@@ -49,9 +50,8 @@ func CalculateTags(actualTags []*tags.Tag, availableTagValues map[string]interfa
 			// Delete case
 			// In the delete case, no value is required
 			// Value is the actual one in fact, if it exists
-
 			// Filter to check if the value already exists on the resource
-			filterResult := funk.Filter(actualTags, func(actualTag *tags.Tag) bool {
+			filterResult, _ := funk.Filter(actualTags, func(actualTag *tags.Tag) bool {
 				return actualTag.Key == tag.Key
 			}).([]*tags.Tag)
 			// Check if tag already exists and need to be removed
@@ -74,6 +74,7 @@ func CalculateTags(actualTags []*tags.Tag, availableTagValues map[string]interfa
 				if queryResult == "" {
 					// Stop here, cannot get value
 					logrus.Infof("Tag %s with query %s doesn't give any results -> skip it", rule.Tag, rule.Query)
+
 					continue
 				}
 				tag.Value = queryResult
@@ -83,7 +84,7 @@ func CalculateTags(actualTags []*tags.Tag, availableTagValues map[string]interfa
 			}
 
 			// Filter to test if value if necessary added / updated
-			filterResult := funk.Filter(actualTags, func(actualTag *tags.Tag) bool {
+			filterResult, _ := funk.Filter(actualTags, func(actualTag *tags.Tag) bool {
 				return actualTag.Key == tag.Key && actualTag.Value == tag.Value
 			}).([]*tags.Tag)
 
@@ -95,14 +96,16 @@ func CalculateTags(actualTags []*tags.Tag, availableTagValues map[string]interfa
 			}
 		}
 	}
+
 	delta := &tags.TagDelta{AddList: addList, DeleteList: deleteList}
+
 	return delta, nil
 }
 
 func evalConditions(conditions []*Condition, gjsonResult gjson.Result) bool {
 	result := true
-	for i := 0; i < len(conditions); i++ {
-		condition := conditions[i]
+
+	for _, condition := range conditions {
 		queryResult := gjsonResult.Get(condition.Condition).String()
 		if condition.Operator == ConditionOperatorEqual {
 			result = result && queryResult == condition.Value
@@ -114,5 +117,6 @@ func evalConditions(conditions []*Condition, gjsonResult gjson.Result) bool {
 			return result
 		}
 	}
+
 	return result
 }

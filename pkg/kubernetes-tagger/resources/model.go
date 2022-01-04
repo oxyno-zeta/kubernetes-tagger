@@ -8,7 +8,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// Resource Resource interface for all type of data
+// Resource Resource interface for all type of data.
 type Resource interface {
 	Type() string
 	Platform() string
@@ -17,7 +17,7 @@ type Resource interface {
 	ManageTags(delta *tags.TagDelta) error
 }
 
-// NewFromPersistentVolume New resource instance from persistent volume
+// NewFromPersistentVolume New resource instance from persistent volume.
 func NewFromPersistentVolume(k8sClient kubernetes.Interface, pv *v1.PersistentVolume, cfg *config.Configuration) (Resource, error) {
 	// Check if AWS provider is enabled
 	if cfg.Provider == config.AWSProviderName {
@@ -32,13 +32,15 @@ func NewFromPersistentVolume(k8sClient kubernetes.Interface, pv *v1.PersistentVo
 			if err != nil {
 				return nil, err
 			}
+
 			return res, nil
 		}
 	}
-	return nil, nil
+
+	return nil, nil //nolint:nilnil // Not needed
 }
 
-// NewFromService New resource instance from service
+// NewFromService New resource instance from service.
 func NewFromService(k8sClient kubernetes.Interface, svc *v1.Service, cfg *config.Configuration) (Resource, error) {
 	// Check if AWS provider is enabled
 	if cfg.Provider == config.AWSProviderName {
@@ -53,8 +55,10 @@ func NewFromService(k8sClient kubernetes.Interface, svc *v1.Service, cfg *config
 			if err != nil {
 				return nil, err
 			}
+
 			return res, nil
 		}
 	}
-	return nil, nil
+
+	return nil, nil //nolint:nilnil // Not needed
 }

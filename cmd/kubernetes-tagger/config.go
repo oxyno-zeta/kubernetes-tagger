@@ -16,10 +16,10 @@ import (
 	componentbaseconfig "k8s.io/component-base/config"
 )
 
-// Kubernetes configuration home path
+// Kubernetes configuration home path.
 const kubeConfig = ".kube/config"
 
-func configureViper(onChange func(e fsnotify.Event)) {
+func configureViper(onChange func(e fsnotify.Event)) error {
 	kubeConfigPath := filepath.Join(os.Getenv("HOME"), kubeConfig)
 	// Flags
 	flag.String("namespace", "kube-system", "Namespace where "+projectName+" is deployed")
@@ -30,7 +30,12 @@ func configureViper(onChange func(e fsnotify.Event)) {
 	flag.String("provider", "aws", "Kubernetes Provider")
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
 	pflag.Parse()
-	viper.BindPFlags(pflag.CommandLine)
+
+	err := viper.BindPFlags(pflag.CommandLine)
+	// Check error
+	if err != nil {
+		return err
+	}
 	// Add config file name
 	viper.SetConfigName(config.RecommendedConfigFileName)
 	// Add config possible path
@@ -40,9 +45,12 @@ func configureViper(onChange func(e fsnotify.Event)) {
 	// Watch configuration file change
 	viper.WatchConfig()
 	viper.OnConfigChange(onChange)
+
+	// Default
+	return nil
 }
 
-// Default values for leader election
+// Default values for leader election.
 const (
 	defaultLeaseDuration = 15 * time.Second
 	defaultRenewDeadline = 10 * time.Second
@@ -65,6 +73,7 @@ func configureLogger() {
 	if err != nil {
 		logrus.Fatal(err)
 	}
+
 	logrus.SetLevel(lvl)
 
 	// Log Formatter

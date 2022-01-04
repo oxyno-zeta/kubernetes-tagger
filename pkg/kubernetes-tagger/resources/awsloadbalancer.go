@@ -3,7 +3,7 @@ package resources
 import (
 	"strings"
 
-	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/providerClient"
+	providerclient "github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/providerClient"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/tags"
 
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/config"
@@ -12,30 +12,34 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// AWSLoadBalancer AWS Load Balancer
+// AWSLoadBalancer AWS Load Balancer.
 type AWSLoadBalancer struct {
 	resourceType     string
 	resourcePlatform string
 	awsConfig        *config.AWSConfig
 	service          *v1.Service
 	k8sClient        kubernetes.Interface
-	volumeID         string
 	log              *logrus.Entry
 	prcl             *providerclient.AWSProviderClient
 }
 
-// Type Get type
+// Type Get type.
 func (al *AWSLoadBalancer) Type() string {
 	return al.resourceType
 }
 
-// Platform Get platform
+// Platform Get platform.
 func (al *AWSLoadBalancer) Platform() string {
 	return al.resourcePlatform
 }
 
-// newAWSLoadBalancer Generate a new AWS Load Balancer
-func newAWSLoadBalancer(k8sClient kubernetes.Interface, svc *v1.Service, config *config.Configuration, prcl providerclient.ProviderClient) (*AWSLoadBalancer, error) {
+// newAWSLoadBalancer Generate a new AWS Load Balancer.
+func newAWSLoadBalancer(
+	k8sClient kubernetes.Interface,
+	svc *v1.Service,
+	config *config.Configuration,
+	prcl providerclient.ProviderClient,
+) (*AWSLoadBalancer, error) { // nolint: unparam // Ignore this
 	// Create logger
 	log := logrus.WithFields(logrus.Fields{
 		"type":        LoadBalancerResourceType,
@@ -53,30 +57,36 @@ func newAWSLoadBalancer(k8sClient kubernetes.Interface, svc *v1.Service, config 
 		log:              log,
 		prcl:             prcl.(*providerclient.AWSProviderClient),
 	}
+
 	return &instance, nil
 }
 
-// isAWSLoadBalancerResource returns a boolean to know if a service is an AWS Load Balancer
+// isAWSLoadBalancerResource returns a boolean to know if a service is an AWS Load Balancer.
 func isAWSLoadBalancerResource(svc *v1.Service) bool {
 	if svc == nil {
 		return false
 	}
+
 	// Check that svc is a load balancer
 	if svc.Spec.Type != v1.ServiceTypeLoadBalancer {
 		return false
 	}
+
+	// Check if load balancer ingress is detected
 	if svc.Status.LoadBalancer.Ingress == nil || len(svc.Status.LoadBalancer.Ingress) == 0 {
 		return false
 	}
+
 	// Get ingress
 	ing := svc.Status.LoadBalancer.Ingress[0]
 	if ing.Hostname == "" {
 		return false
 	}
+
 	return strings.HasSuffix(ing.Hostname, "amazonaws.com")
 }
 
-// GetAvailableTagValues Get available tag values
+// GetAvailableTagValues Get available tag values.
 func (al *AWSLoadBalancer) GetAvailableTagValues() (map[string]interface{}, error) {
 	// Begin to create available tag values
 	availableTags := make(map[string]interface{})
@@ -88,17 +98,19 @@ func (al *AWSLoadBalancer) GetAvailableTagValues() (map[string]interface{}, erro
 	svcTags["annotations"] = al.service.Annotations
 	svcTags["labels"] = al.service.Labels
 	availableTags["service"] = svcTags
+
 	return availableTags, nil
 }
 
-// GetActualTags Get actual tags
+// GetActualTags Get actual tags.
 func (al *AWSLoadBalancer) GetActualTags() ([]*tags.Tag, error) {
 	al.log.Info("Get actual tags on resource")
+
 	return al.prcl.GetActualTagsFromService(al.service)
 }
 
-// ManageTags Manage tags
-func (al *AWSLoadBalancer) ManageTags(delta *tags.TagDelta) error {
+// ManageTags Manage tags.
+func (al *AWSLoadBalancer) ManageTags(delta *tags.TagDelta) error { // nolint: dupl // Ignore that
 	al.log.WithField("delta", delta).Debug("Manage tags on resource")
 	al.log.Info("Manage tags on resource")
 
@@ -106,9 +118,11 @@ func (al *AWSLoadBalancer) ManageTags(delta *tags.TagDelta) error {
 	if len(delta.AddList) > 0 {
 		al.log.WithField("delta", delta).Debug("Add list detected. Begin request to AWS.")
 		err := al.prcl.AddTagsFromService(al.service, delta.AddList)
+		// Check error
 		if err != nil {
 			return err
 		}
+
 		al.log.WithField("delta", delta).Debug("Add list successfully managed")
 	}
 
@@ -118,9 +132,11 @@ func (al *AWSLoadBalancer) ManageTags(delta *tags.TagDelta) error {
 	if len(delta.DeleteList) > 0 {
 		al.log.WithField("delta", delta).Debug("Delete list detected. Begin request to AWS.")
 		err := al.prcl.DeleteTagsFromService(al.service, delta.DeleteList)
+		// Check error
 		if err != nil {
 			return err
 		}
+
 		al.log.WithField("delta", delta).Debug("Delete list successfully managed")
 	}
 

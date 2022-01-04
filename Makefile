@@ -44,7 +44,7 @@ all: lint test build
 
 .PHONY: lint
 lint: dep
-	golint -set_exit_status ./...
+	golangci-lint run ./...
 
 .PHONY: build
 build: clean dep
@@ -90,17 +90,23 @@ clean:
 
 HAS_GIT := $(shell command -v git;)
 HAS_GOX := $(shell command -v gox;)
-HAS_GOLINT := $(shell command -v golint;)
+HAS_GOLANGCI_LINT := $(shell command -v golangci-lint;)
+HAS_CURL:=$(shell command -v curl;)
 
 .PHONY: dep
 dep:
 ifndef HAS_GOX
 	go get -u github.com/mitchellh/gox
 endif
-ifndef HAS_GOLINT
-	go get -u golang.org/x/lint/golint
+ifndef HAS_GOLANGCI_LINT
+	@echo "=> Installing golangci-lint tool"
+ifndef HAS_CURL
+	$(error You must install curl)
+endif
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.43.0
 endif
 ifndef HAS_GIT
 	$(error You must install Git)
 endif
-	$(GO) mod download
+	$(GO) mod download all
+	$(GO) mod tidy

@@ -6,7 +6,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// ProviderClient Provider Client
+// ProviderClient Provider Client.
 type ProviderClient interface {
 	GetActualTagsFromPersistentVolume(pv *v1.PersistentVolume) ([]*tags.Tag, error)
 	GetActualTagsFromService(svc *v1.Service) ([]*tags.Tag, error)
@@ -16,7 +16,7 @@ type ProviderClient interface {
 	DeleteTagsFromService(svc *v1.Service, tagsList []*tags.Tag) error
 }
 
-// NewProviderClient New Provider client
+// NewProviderClient New Provider client.
 func NewProviderClient(cfg *config.Configuration) (ProviderClient, error) {
 	return newAWSProviderClient(cfg.AWS)
 }

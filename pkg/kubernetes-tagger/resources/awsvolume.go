@@ -1,7 +1,7 @@
 package resources
 
 import (
-	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/providerClient"
+	providerclient "github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/providerClient"
 	"github.com/oxyno-zeta/kubernetes-tagger/pkg/kubernetes-tagger/tags"
 
 	"github.com/sirupsen/logrus"
@@ -11,7 +11,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// AWSVolume AWS Volume
+// AWSVolume AWS Volume.
 type AWSVolume struct {
 	resourceType     string
 	resourcePlatform string
@@ -22,18 +22,23 @@ type AWSVolume struct {
 	prcl             *providerclient.AWSProviderClient
 }
 
-// Type Get type
+// Type Get type.
 func (av *AWSVolume) Type() string {
 	return av.resourceType
 }
 
-// Platform Get platform
+// Platform Get platform.
 func (av *AWSVolume) Platform() string {
 	return av.resourcePlatform
 }
 
-// newAWSVolume Generate a new AWS Volume
-func newAWSVolume(k8sClient kubernetes.Interface, pv *v1.PersistentVolume, config *config.Configuration, prcl providerclient.ProviderClient) (*AWSVolume, error) {
+// newAWSVolume Generate a new AWS Volume.
+func newAWSVolume(
+	k8sClient kubernetes.Interface,
+	pv *v1.PersistentVolume,
+	config *config.Configuration,
+	prcl providerclient.ProviderClient,
+) (*AWSVolume, error) { // nolint: unparam // Ignore this
 	// Create logger
 	log := logrus.WithFields(logrus.Fields{
 		"type":                 VolumeResourceType,
@@ -51,15 +56,16 @@ func newAWSVolume(k8sClient kubernetes.Interface, pv *v1.PersistentVolume, confi
 		log:              log,
 		prcl:             prcl.(*providerclient.AWSProviderClient),
 	}
+
 	return &instance, nil
 }
 
-// isAWSVolumeResource returns a boolean to know if a persistent volume is an AWS Volume
+// isAWSVolumeResource returns a boolean to know if a persistent volume is an AWS Volume.
 func isAWSVolumeResource(pv *v1.PersistentVolume) bool {
 	return pv.Spec.AWSElasticBlockStore != nil
 }
 
-// GetAvailableTagValues Get available tags
+// GetAvailableTagValues Get available tags.
 func (av *AWSVolume) GetAvailableTagValues() (map[string]interface{}, error) {
 	pvc, err := getPersistentVolumeClaim(av.persistentVolume, av.k8sClient)
 	if err != nil {
@@ -96,11 +102,12 @@ func (av *AWSVolume) GetAvailableTagValues() (map[string]interface{}, error) {
 // GetActualTags Get actual tags.
 func (av *AWSVolume) GetActualTags() ([]*tags.Tag, error) {
 	av.log.Info("Get actual tags on resource")
+
 	return av.prcl.GetActualTagsFromPersistentVolume(av.persistentVolume)
 }
 
-// ManageTags Manage tags on resource
-func (av *AWSVolume) ManageTags(delta *tags.TagDelta) error {
+// ManageTags Manage tags on resource.
+func (av *AWSVolume) ManageTags(delta *tags.TagDelta) error { // nolint: dupl // Ignore
 	// TODO Need to check AWS Limits before sending
 	av.log.WithField("delta", delta).Debug("Manage tags on resource")
 	av.log.Info("Manage tags on resource")
@@ -111,9 +118,11 @@ func (av *AWSVolume) ManageTags(delta *tags.TagDelta) error {
 	if len(delta.AddList) > 0 {
 		av.log.WithField("delta", delta).Debug("Add list detected. Begin request to AWS.")
 		err := av.prcl.AddTagsFromPersistentVolume(av.persistentVolume, delta.AddList)
+		// Check error
 		if err != nil {
 			return err
 		}
+
 		av.log.WithField("delta", delta).Debug("Add list successfully managed")
 	}
 
@@ -123,9 +132,11 @@ func (av *AWSVolume) ManageTags(delta *tags.TagDelta) error {
 	if len(delta.DeleteList) > 0 {
 		av.log.WithField("delta", delta).Debug("Delete list detected. Begin request to AWS.")
 		err := av.prcl.DeleteTagsFromPersistentVolume(av.persistentVolume, delta.DeleteList)
+		// Check error
 		if err != nil {
 			return err
 		}
+
 		av.log.WithField("delta", delta).Debug("Delete list successfully managed")
 	}
 

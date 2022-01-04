@@ -26,7 +26,7 @@ import (
 	kube_record "k8s.io/client-go/tools/record"
 )
 
-// Project name used for configuration path
+// Project name used for configuration path.
 const projectName = "kubernetes-tagger"
 
 var context = &business.Context{}
@@ -39,7 +39,7 @@ func main() {
 	}
 
 	// Viper configuration
-	configureViper(func(e fsnotify.Event) {
+	err = configureViper(func(e fsnotify.Event) {
 		// Event only say that the file is reloading
 		logrus.WithField("file", e.Name).Info("Configuration file changed")
 		// Reload configuration
@@ -48,6 +48,10 @@ func main() {
 			logrus.Fatal(err)
 		}
 	})
+	// Check error
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
 	err = readConfiguration()
 	if err != nil {
@@ -58,6 +62,7 @@ func main() {
 	configureLogger()
 
 	versionObj := version.GetVersion()
+
 	logrus.WithFields(logrus.Fields{
 		"build-date": versionObj.BuildDate,
 		"git-commit": versionObj.GitCommit,
@@ -137,10 +142,13 @@ func readConfiguration() error {
 	if err != nil {
 		logrus.Fatalf("Fatal error reading configuration file: %v", err)
 	}
+
 	var cfg config.Configuration
+
 	err = viper.Unmarshal(&cfg)
+	// Check error
 	if err != nil {
-		logrus.Fatalf("Error marshalling configuration: %v", err)
+		logrus.Fatalf("Error marshaling configuration: %v", err)
 	}
 
 	// Generate rules from rules declared in configuration
@@ -159,6 +167,7 @@ func readConfiguration() error {
 
 func getKubernetesClient() (*kubernetes.Clientset, error) {
 	var config *rest.Config
+
 	kubeConfigPath := context.Configuration.Kubeconfig
 
 	exists, err := utils.Exists(kubeConfigPath)
@@ -168,14 +177,19 @@ func getKubernetesClient() (*kubernetes.Clientset, error) {
 
 	if exists {
 		logrus.WithFields(logrus.Fields{"config": kubeConfigPath}).Info("Using out of cluster config")
+
 		config, err = clientcmd.BuildConfigFromFlags("", kubeConfigPath)
 	} else {
 		logrus.Info("Using in cluster config")
+
 		config, err = rest.InClusterConfig()
 	}
+	// Check error
 	if err != nil {
 		return nil, err
 	}
+
 	logrus.WithField("host", config.Host).Info("Create Kubernetes client")
+
 	return kubernetes.NewForConfig(config)
 }

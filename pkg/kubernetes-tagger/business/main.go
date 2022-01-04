@@ -8,7 +8,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-// Watch Watch Kubernetes
+// Watch Watch Kubernetes.
 func Watch(context *Context) {
 	informerFactory := kubeinformers.NewSharedInformerFactoryWithOptions(context.KubernetesClient,
 		time.Minute, kubeinformers.WithNamespace(""))

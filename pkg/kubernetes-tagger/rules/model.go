@@ -1,24 +1,24 @@
 package rules
 
-// ActionType Action type
+// ActionType Action type.
 type ActionType string
 
-// RuleActionAdd Rule Action Add
+// RuleActionAdd Rule Action Add.
 const RuleActionAdd = ActionType("add")
 
-// RuleActionDelete Rule Action Delete
+// RuleActionDelete Rule Action Delete.
 const RuleActionDelete = ActionType("delete")
 
-// ConditionOperator Condition operator
+// ConditionOperator Condition operator.
 type ConditionOperator string
 
-// ConditionOperatorEqual Equal
+// ConditionOperatorEqual Equal.
 const ConditionOperatorEqual = ConditionOperator("Equal")
 
-// ConditionOperatorNotEqual Not Equal
+// ConditionOperatorNotEqual Not Equal.
 const ConditionOperatorNotEqual = ConditionOperator("NotEqual")
 
-// Rule rule
+// Rule rule.
 type Rule struct {
 	Tag    string
 	Query  string
@@ -27,7 +27,7 @@ type Rule struct {
 	When   []*Condition
 }
 
-// Condition condition
+// Condition condition.
 type Condition struct {
 	Condition string
 	Value     string

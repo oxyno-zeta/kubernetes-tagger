@@ -20,5 +20,6 @@ func serve() {
 	if err != nil {
 		logrus.Fatalf("Failed to start server: %v", err)
 	}
+
 	logrus.Info("Server listening on address " + address)
 }
