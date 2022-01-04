@@ -44,7 +44,7 @@ all: lint test build
 
 .PHONY: lint
 lint: dep
-	golangci-lint run ./...
+	golangci-lint run --timeout=3600s ./...
 
 .PHONY: build
 build: clean dep
